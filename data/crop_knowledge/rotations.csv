@@ -1,0 +1,6 @@
+rotation_id,name,crops,description
+rw,Rice → Wheat,rice;wheat,The existing dominant system in the Punjab rice-wheat zone.
+rwm,Rice → Wheat → Mungbean,rice;wheat;mungbean,Adds a short-duration legume in the summer fallow between wheat harvest and rice transplanting.
+mw,Maize → Wheat,maize;wheat,Replaces puddled rice with autumn maize before wheat.
+cw,Cotton → Wheat,cotton;wheat,The dominant system of the southern Punjab cotton zone.
+mwm,Maize → Wheat → Mungbean,maize;wheat;mungbean,Maize-wheat with a summer legume in the fallow window.
