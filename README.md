@@ -31,7 +31,7 @@ Field Shift has two parts that share one data pipeline and engine:
 
 | Part | For whom | What it offers |
 |---|---|---|
-| 🌐 **Public website** (`docs/`) | Farmers and the general public | 5 tap-to-answer questions, English and اردو, works on any phone, no server, live 7-day weather tips |
+| 🌐 **Public website** (`docs/`) | Farmers and the general public | 5 tap-to-answer questions, side-by-side comparison of all rotations (score, water, irrigations, six factors, bare days), crop price comparison from Punjab AMIS per maund and per 100 kg with prices in each market, NASA charts of the district, live 7-day weather tips; English and اردو; works on any phone, no server |
 | 🔬 **Analysis platform** (Streamlit) | Extension officers, researchers, judges | 8 pages, any map location, scenario analysis, full charts, market prices, downloadable data and reports |
 
 ---
@@ -63,7 +63,7 @@ Every number is labelled by origin: **Observed** (satellite or market), **Model 
 | **MODIS MCD12Q1** land cover | NASA LP DAAC via ORNL DAAC | 500 m, yearly | 2022 | confirms each district point is cropland | ✅ in use |
 | **SMAP SPL3SMP_E v6** surface soil moisture | NASA NSIDC DAAC via AppEEARS | 9 km, daily | Apr 2015 → Oct 2026 | soil-moisture pattern, confidence | ✅ all 6 districts |
 | **GPM IMERG** Final monthly | NASA GES DISC | 0.1° | 2000 → | rainfall cross-check of POWER | ✅ public website |
-| **Punjab AMIS** wholesale prices | Directorate of Agriculture (Economics & Marketing) Punjab | market level, Rs/100 kg | daily snapshots from 15 Nov 2026 | market context | ✅ in use |
+| **Punjab AMIS** wholesale prices | Directorate of Agriculture (Economics & Marketing) Punjab | market level, Rs/100 kg | daily snapshots from 15 Nov 2026 | crop price comparison on the website and platform | ✅ in use |
 | Local crop knowledge | Punjab Agriculture Department, AARI, PARC, FAO | district | — | sowing windows, crop coefficients, thresholds, agro-ecological zones | ✅ `data/crop_knowledge/` |
 | ISRIC SoilGrids · GRACE/GRACE-FO · MODIS MOD16 | — | — | — | soil texture, groundwater, evapotranspiration | ⏳ planned |
 
@@ -170,7 +170,7 @@ src/
   visualization.py        Plotly charts
   report.py               printable farmer report
   ui.py                   state, design system, shared components, cached data
-scripts/                  data download and conversion (POWER/MODIS, SMAP, AMIS)
+scripts/                  data download and conversion (POWER/MODIS, SMAP, AMIS) and website price export
 data/crop_knowledge/      crops.csv, rotations.csv, regions.csv (with sources and verification status)
 data/raw/                 cached NASA data, AppEEARS SMAP downloads, AMIS price snapshots
 docs/                     public website

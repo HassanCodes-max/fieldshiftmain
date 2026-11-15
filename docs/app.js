@@ -282,7 +282,23 @@ function renderResult() {
       el("button", { class: "btn line", type: "button", text: f.print, onclick: () => window.print() })),
     el("p", { class: "muted", text: f.officer, style: { margin: ".8rem 0 0" } }));
 
-  box.replaceChildren(verdict, lists, calendar(rows), opts, actions);
+  const F = ["water", "soil", "climate", "soilfit", "calendar", "market"];
+  const cell = v => el("td", { class: "num sc s" + (v >= 70 ? "3" : v >= 45 ? "2" : "1"), text: L(n0(v)) });
+  const cmp = el("div", { class: "card fade" }, el("h4", { text: f.cmp_h, style: { margin: "0 0 .3rem" } }),
+    el("p", { class: "muted", text: f.cmp_intro, style: { margin: "0 0 .7rem" } }),
+    el("div", { class: "tbl-wrap" }, el("table", { class: "tbl" },
+      el("thead", {}, el("tr", {}, el("th", { text: f.cmp_rot }), el("th", { class: "num", text: f.cmp_score }),
+        el("th", { class: "num", text: f.cmp_water }), el("th", { class: "num", text: f.cmp_irr }),
+        ...F.map(k => el("th", { class: "num", text: f.fac[k] })), el("th", { class: "num", text: f.cmp_bare }))),
+      el("tbody", {}, ranked.map(o => el("tr", { class: (o === best ? "best" : "") + (o.ev.gate ? " gate" : "") },
+        el("td", {}, rotName(o.rid), o === cur ? el("span", { class: "tag", text: f.now_tag }) : null),
+        el("td", { class: "num total", text: L(n0(o.total)) }),
+        el("td", { class: "num", text: L(n0(o.ev.water)) }),
+        el("td", { class: "num", text: L(n0(o.ev.water / META.irr_depth)) }),
+        ...F.map(k => cell(o.scores[k])),
+        el("td", { class: "num", text: L(n0(o.ev.bare)) })))))));
+
+  box.replaceChildren(verdict, lists, calendar(rows), opts, cmp, actions);
 }
 
 /* ---------------------------------------------------------------- weather */
@@ -450,6 +466,92 @@ function renderLand() {
   document.getElementById("trends").replaceChildren(...cards.filter(Boolean));
 }
 
+/* ---------------------------------------------------------------- market prices (Punjab AMIS) */
+let PRICES = null;
+let mkCrop = "wheat";
+const PER40 = 0.4; // AMIS reports Rs/100 kg; farmers trade per maund (40 kg)
+function money(v) { return L(Math.round(v).toLocaleString("en-US")); }
+const RS = () => (S.lang === "ur" ? "روپے " : "Rs ");
+function renderMarket() {
+  const f = T();
+  const meta = document.getElementById("mkMeta");
+  if (!PRICES || !META) {
+    meta.replaceChildren(el("div", { class: "card", text: f.mk_none }));
+    return;
+  }
+  const P = PRICES, ids = Object.keys(P.crops).filter(c => META.crops[c]);
+  if (!P.crops[mkCrop]) mkCrop = ids[0];
+  const d = new Date(P.date + "T00:00:00");
+  const dateTxt = L(`${d.getDate()} ${MONTHS[S.lang][d.getMonth()]} ${d.getFullYear()}`);
+  meta.replaceChildren(
+    el("span", { class: "pill ok", text: t("mk_date", { date: dateTxt }) }),
+    el("span", { class: "pill", text: f.mk_unit }),
+    el("span", { class: "pill", text: t("mk_n", { n: P.markets }) }));
+
+  document.getElementById("mkCards").replaceChildren(...ids.map(c => {
+    const x = P.crops[c];
+    return el("div", { class: "mk-card reveal in", style: { "--c": CROP_COLORS[c] } },
+      el("div", { class: "h" }, el("span", { class: "e", text: META.crops[c].emoji }), el("b", { text: cropName(c) })),
+      el("div", { class: "v", text: RS() + money(x.median * PER40) }),
+      el("div", { class: "muted", text: f.mk_per40 }),
+      el("div", { class: "row" }, el("span", { text: RS() + money(x.median) }), el("span", { class: "muted", text: f.mk_per100 })),
+      el("div", { class: "row" }, el("span", { text: `${money(x.min * PER40)} – ${money(x.max * PER40)}` }),
+        el("span", { class: "muted", text: t("mk_range_n", { n: x.n }) })));
+  }));
+
+  // horizontal bars: light band = lowest-highest market, dark bar = median (per 40 kg)
+  const W = 600, rowH = 46, H = ids.length * rowH + 20, l = 120, r = 96;
+  const mx = Math.max(...ids.map(c => P.crops[c].max)) * PER40;
+  const sc = v => l + (W - l - r) * v / mx;
+  const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": f.mk_chart, direction: "ltr" });
+  ids.forEach((c, i) => {
+    const x = P.crops[c], y0 = 6 + i * rowH;
+    const name = svgEl("text", { x: l - 10, y: y0 + 23, "text-anchor": "end", class: "lbl" });
+    name.textContent = cropName(c);
+    svg.append(name);
+    svg.append(svgEl("rect", { x: sc(x.min * PER40), y: y0 + 8, width: Math.max(3, sc(x.max * PER40) - sc(x.min * PER40)),
+                               height: 22, rx: 6, fill: CROP_COLORS[c], opacity: .22 }));
+    svg.append(svgEl("rect", { x: l, y: y0 + 14, width: Math.max(2, sc(x.median * PER40) - l), height: 10, rx: 5,
+                               fill: CROP_COLORS[c] }));
+    const v = svgEl("text", { x: sc(x.max * PER40) + 8, y: y0 + 23, class: "val" });
+    v.textContent = RS() + money(x.median * PER40);
+    svg.append(v);
+  });
+  document.getElementById("mkChart").replaceChildren(svg);
+
+  // comparison table
+  const head = ["mk_crop", "mk_item", "mk_med40", "mk_med100", "mk_low", "mk_high", "mk_mkts"];
+  document.getElementById("mkTable").replaceChildren(el("table", { class: "tbl" },
+    el("thead", {}, el("tr", {}, head.map((k, i) => el("th", { class: i > 1 ? "num" : "", text: f[k] })))),
+    el("tbody", {}, [...ids].sort((a, b) => P.crops[b].median - P.crops[a].median).map(c => {
+      const x = P.crops[c];
+      return el("tr", {}, el("td", { text: `${META.crops[c].emoji} ${cropName(c)}` }),
+        el("td", { class: "muted", text: x.commodity }),
+        el("td", { class: "num total", text: money(x.median * PER40) }), el("td", { class: "num", text: money(x.median) }),
+        el("td", { class: "num", text: money(x.min * PER40) }), el("td", { class: "num", text: money(x.max * PER40) }),
+        el("td", { class: "num", text: L(x.n) }));
+    }))));
+
+  // prices in each market for one crop
+  document.getElementById("mkPick").replaceChildren(...ids.map(c => el("button", {
+    type: "button", class: "chip", "aria-pressed": String(c === mkCrop), text: `${META.crops[c].emoji} ${cropName(c)}`,
+    onclick: () => { mkCrop = c; renderMarket(); } })));
+  const x = P.crops[mkCrop];
+  const rows = x.markets.map(m => el("tr", {}, el("td", { text: m.m }),
+    el("td", { class: "num total", text: money(m.p * PER40) }), el("td", { class: "num", text: money(m.p) }),
+    el("td", { class: "num " + (m.p >= x.median ? "up" : "down"),
+               text: (m.p >= x.median ? "+" : "−") + L(n0(Math.abs(100 * (m.p - x.median) / x.median))) + "%" })));
+  for (const v of x.varieties) {
+    rows.push(el("tr", { class: "var" }, el("td", { text: `${v.c} · ${t("mk_var_n", { n: v.n })}` }),
+      el("td", { class: "num", text: money(v.median * PER40) }), el("td", { class: "num", text: money(v.median) }), el("td", {})));
+  }
+  document.getElementById("mkMarkets").replaceChildren(el("table", { class: "tbl" },
+    el("thead", {}, el("tr", {}, el("th", { text: f.mk_market }), el("th", { class: "num", text: f.mk_med40 }),
+      el("th", { class: "num", text: f.mk_med100 }), el("th", { class: "num", text: f.mk_vs }))),
+    el("tbody", {}, rows)));
+  document.getElementById("mkSrc").textContent = t("mk_src", { date: dateTxt });
+}
+
 /* ---------------------------------------------------------------- static text, how-it-works */
 function renderStatic() {
   const f = T();
@@ -471,29 +573,7 @@ function renderStatic() {
 
 /* ---------------------------------------------------------------- hero animation */
 function buildHero() {
-  const g = document.getElementById("wheat");
-  const rnd = (a, b) => a + Math.random() * (b - a);
-  const n = window.innerWidth < 700 ? 48 : 95;
-  for (let i = 0; i < n; i++) {
-    const x = (i + rnd(-0.3, 0.3)) * 1440 / n, base = rnd(196, 232), h = rnd(46, 92);
-    const st = svgEl("g", { class: "stalk" });
-    st.style.animationDuration = `${rnd(2.6, 4.8).toFixed(2)}s`;
-    st.style.animationDelay = `${(-rnd(0, 4)).toFixed(2)}s`;
-    st.append(svgEl("path", { d: `M${x} ${base} Q${x + rnd(-6, 6)} ${base - h / 2} ${x} ${base - h}` }));
-    for (let k = 0; k < 5; k++) {
-      const yy = base - h + k * 6;
-      st.append(svgEl("ellipse", { cx: x - 3, cy: yy, rx: 2.6, ry: 5, transform: `rotate(-25 ${x - 3} ${yy})` }));
-      st.append(svgEl("ellipse", { cx: x + 3, cy: yy + 3, rx: 2.6, ry: 5, transform: `rotate(25 ${x + 3} ${yy + 3})` }));
-    }
-    g.append(st);
-  }
-  const pol = document.getElementById("pollen");
-  for (let i = 0; i < 22; i++) {
-    pol.append(el("span", { style: { left: `${rnd(0, 100)}%`, animationDuration: `${rnd(7, 14)}s`,
-                                      animationDelay: `${-rnd(0, 14)}s`, transform: `scale(${rnd(.5, 1.2)})` } }));
-  }
-  const counters = document.querySelectorAll(".count");
-  counters.forEach(nd => countTo(nd, 0, Number(nd.dataset.to), 1400));
+  document.querySelectorAll(".count").forEach(nd => countTo(nd, 0, Number(nd.dataset.to), 1200));
 }
 
 /* ---------------------------------------------------------------- reveal on scroll */
@@ -527,6 +607,7 @@ async function renderAll() {
   if (token !== renderToken) return;
   renderResult();
   renderLand();
+  renderMarket();
 }
 
 async function boot() {
@@ -555,6 +636,7 @@ async function boot() {
     lastScore = 0;
     renderAll();
   });
+  try { const pr = await fetch("data/prices.json"); if (pr.ok) PRICES = await pr.json(); } catch (e) { /* offline */ }
   renderAll();
   // preload the other districts in the background so switching is instant
   setTimeout(() => META.regions.forEach(r => loadRegion(r.id).catch(() => {})), 1500);
