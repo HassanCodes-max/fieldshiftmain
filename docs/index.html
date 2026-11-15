@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.open-meteo.com; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Field Shift — crop advice from NASA satellite data</title>
+<meta name="description" content="Free crop-rotation advice for farmers in Punjab, Pakistan, from 25 years of NASA satellite and weather data. English and Urdu.">
+<meta name="theme-color" content="#1f4d2b">
+<meta property="og:title" content="Field Shift — crop advice from NASA satellite data">
+<meta property="og:description" content="Which crops should I grow next? Free advice from 25 years of NASA data, in English and Urdu.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌾%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap">
+<link rel="preload" href="data/meta.json" as="fetch" crossorigin>
+<link rel="stylesheet" href="style.css">
+<script src="i18n.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#advice" data-t="skip"></a>
+
+<header class="bar" id="top">
+  <a class="brand" href="#top"><span class="logo">🌾</span><span data-t="brand"></span></a>
+  <nav class="links" aria-label="main">
+    <a href="#advice" data-t="nav_advice"></a>
+    <a href="#weather" data-t="nav_weather"></a>
+    <a href="#land" data-t="nav_land"></a>
+    <a href="#how" data-t="nav_how"></a>
+  </nav>
+  <button class="lang" id="langBtn" type="button" aria-label="language"></button>
+</header>
+
+<section class="hero" aria-labelledby="heroTitle">
+  <div class="sky" aria-hidden="true">
+    <div class="sun"></div>
+    <div class="orbit"><span class="sat">🛰️</span></div>
+    <svg class="cloud c1" viewBox="0 0 200 80"><path d="M30 70h140a30 30 0 0 0 0-60 40 40 0 0 0-75-5A32 32 0 0 0 30 70z"/></svg>
+    <svg class="cloud c2" viewBox="0 0 200 80"><path d="M30 70h140a30 30 0 0 0 0-60 40 40 0 0 0-75-5A32 32 0 0 0 30 70z"/></svg>
+    <svg class="cloud c3" viewBox="0 0 200 80"><path d="M30 70h140a30 30 0 0 0 0-60 40 40 0 0 0-75-5A32 32 0 0 0 30 70z"/></svg>
+    <div class="pollen" id="pollen"></div>
+  </div>
+  <div class="hero-inner">
+    <span class="eyebrow" data-t="hero_eyebrow"></span>
+    <h1 id="heroTitle" data-t="hero_title"></h1>
+    <p class="lead" data-t="hero_lead"></p>
+    <div class="cta">
+      <a class="btn primary" href="#advice" data-t="hero_cta"></a>
+      <a class="btn ghost" href="#weather" data-t="hero_cta2"></a>
+    </div>
+    <div class="stats">
+      <div><b class="count" data-to="25">0</b><span data-t="stat_years"></span></div>
+      <div><b class="count" data-to="6">0</b><span data-t="stat_districts"></span></div>
+      <div><b class="count" data-to="4">0</b><span data-t="stat_sets"></span></div>
+    </div>
+  </div>
+  <svg class="field" id="field" viewBox="0 0 1440 260" preserveAspectRatio="none" aria-hidden="true">
+    <path class="hill h1" d="M0 120 C240 60 480 150 720 100 S1200 40 1440 110 V260 H0Z"/>
+    <path class="hill h2" d="M0 170 C300 120 600 200 900 150 S1300 120 1440 160 V260 H0Z"/>
+    <g id="wheat"></g>
+    <path class="hill h3" d="M0 225 C360 200 720 245 1080 215 S1380 210 1440 220 V260 H0Z"/>
+  </svg>
+</section>
+
+<main>
+  <section id="advice" class="section">
+    <div class="blob b1" aria-hidden="true"></div><div class="blob b2" aria-hidden="true"></div>
+    <header class="sec-head reveal">
+      <h2 data-t="adv_title"></h2>
+      <p data-t="adv_intro"></p>
+    </header>
+    <div class="advice">
+      <div class="questions" id="questions"></div>
+      <aside class="result" id="result" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <section id="weather" class="section alt">
+    <header class="sec-head reveal">
+      <h2 id="wxTitle"></h2>
+      <p data-t="wx_intro"></p>
+    </header>
+    <div class="week reveal" id="week"></div>
+    <ul class="tips reveal" id="tips"></ul>
+    <p class="src" data-t="wx_source"></p>
+  </section>
+
+  <section id="land" class="section">
+    <div class="blob b3" aria-hidden="true"></div>
+    <header class="sec-head reveal">
+      <h2 id="landTitle"></h2>
+      <p id="landIntro"></p>
+    </header>
+    <div class="month-card reveal" id="monthCard"></div>
+    <div class="charts">
+      <figure class="chart-card reveal"><figcaption data-t="ch_temp"></figcaption><div class="chart" id="chTemp"></div><p class="legend" id="lgTemp"></p></figure>
+      <figure class="chart-card reveal"><figcaption data-t="ch_rain"></figcaption><div class="chart" id="chRain"></div><p class="legend" id="lgRain"></p></figure>
+      <figure class="chart-card reveal"><figcaption data-t="ch_green"></figcaption><div class="chart" id="chGreen"></div><p class="legend" data-t="ch_green_note"></p></figure>
+      <figure class="chart-card reveal"><figcaption data-t="ch_soil"></figcaption><div class="chart" id="chSoil"></div><p class="legend" id="lgSoil"></p></figure>
+    </div>
+    <div class="trends" id="trends"></div>
+  </section>
+
+  <section id="how" class="section alt">
+    <header class="sec-head reveal">
+      <h2 data-t="how_title"></h2>
+      <p data-t="how_intro"></p>
+    </header>
+    <div class="steps" id="steps"></div>
+    <h3 class="sub reveal" data-t="data_title"></h3>
+    <div class="sources" id="sources"></div>
+    <p class="note reveal" data-t="how_note"></p>
+  </section>
+</main>
+
+<footer class="foot">
+  <p><b data-t="brand"></b> · <span data-t="foot_tag"></span></p>
+  <p data-t="foot_disc"></p>
+  <p class="small" id="built"></p>
+</footer>
+<noscript><p class="noscript">Please turn on JavaScript to use Field Shift. · فیلڈ شفٹ استعمال کرنے کے لیے جاوا اسکرپٹ آن کریں۔</p></noscript>
+</body>
+</html>

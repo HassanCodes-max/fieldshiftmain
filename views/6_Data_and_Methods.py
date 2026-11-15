@@ -21,7 +21,7 @@ with t1:
 | **NASA POWER** Daily (v2.x) | `T2M`, `T2M_MAX`, `T2M_MIN`, `PRECTOTCORR`, `RH2M`, `GWETTOP`, `GWETROOT`, `ALLSKY_SFC_SW_DWN`, `WS2M` | ~0.5° × 0.625° (MERRA-2) | 2001 → yesterday | REST API, no login | ✅ live |
 | **MODIS MOD13Q1 v6.1** | NDVI + pixel reliability | 250 m, 16-day | 2015 → latest | ORNL DAAC MODIS Web Service, no login | ✅ live |
 | **MODIS MCD12Q1** | IGBP land cover (cropland check of preset points) | 500 m, yearly | 2022 | ORNL DAAC | ✅ used to verify presets |
-| **SMAP SPL3SMP_E v6** | Surface soil moisture | 9 km, daily | 2015 → | Earthdata login (AppEEARS) | ✅ Faisalabad loaded · other regions 🔑 |
+| **SMAP SPL3SMP_E v6** | Surface soil moisture | 9 km, daily | 2015 → | Earthdata login (AppEEARS) | ✅ all 6 preset regions loaded |
 | **GPM IMERG** (Final, monthly) | Precipitation | 0.1° | 2000 → | Earthdata login | 🔑 planned cross-check |
 """)
     st.markdown("""
@@ -115,8 +115,9 @@ python -m scripts.convert_smap data/raw/<your-appeears-results>.csv
 ```
 It drops fill values (−9999), averages the AM and PM overpasses and keeps SMAP's quality flag.
 
-*Quality note:* at Faisalabad 2,786 of 4,127 days have a valid retrieval, and SMAP flags none of them as
-"recommended quality" (a 9 km pixel mixing irrigated fields and the city). Field Shift therefore uses SMAP for the
+*Quality note:* each region has about 2,500–2,850 valid days (2015–2026). The share with SMAP's "recommended
+quality" flag ranges from 88% (Okara) and 43–57% (Sheikhupura, Gujranwala, Hafizabad) to 0% (Faisalabad and
+Multan, 9 km pixels that mix irrigated fields, towns and canals). Field Shift therefore uses SMAP for the
 **seasonal pattern and confidence**, not for the irrigation simulation.
 """)
     st.caption(f"Data folder: {C.RAW}")

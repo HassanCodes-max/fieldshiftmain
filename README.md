@@ -9,6 +9,27 @@ climate risk, soil and local fit, calendar fit and market access. The result is 
 with benefits, risks, evidence and data gaps. It is a decision aid to take to an extension officer, not a yield
 prediction.
 
+Field Shift has **two parts**:
+
+| Part | For whom | Where |
+|---|---|---|
+| 🌐 **Public website** (`docs/`): 5 tap-to-answer questions, English / اردو, works on any phone, no server | Farmers, judges, anyone | **https://maavia138.github.io/fieldshift/** (GitHub Pages, after step 2 below) |
+| 🔬 **Analysis app** (Streamlit): map clicks for any location, what-if climate sliders, full charts and downloads | Extension officers, researchers | Run locally, or deploy free on Streamlit Community Cloud |
+
+Website built by [HassanCodes-max](https://github.com/HassanCodes-max); data pipeline and engine are shared.
+The website's numbers are produced by the same engine (see [docs/README.md](docs/README.md)).
+
+## 🚀 Make it public (free)
+
+1. **Upload to GitHub:** `git add . ; git commit -m "Add website and SMAP for all regions" ; git push`
+2. **Website for everyone:** on GitHub open the repo → **Settings → Pages** → *Source: Deploy from a branch* →
+   Branch **main**, folder **/docs** → Save. After about 1 minute it is live at
+   `https://<your-github-username>.github.io/fieldshift/`. It works on any phone or laptop, anywhere.
+3. **Analysis app online (optional):** go to https://share.streamlit.io → sign in with GitHub → *Create app* →
+   repo `fieldshift`, branch `main`, file `app.py` → Deploy. You get a public `https://….streamlit.app` link.
+
+To preview the website on your own laptop: `cd docs ; python -m http.server 8000` → http://localhost:8000
+
 ---
 
 ## Quick start
@@ -45,7 +66,7 @@ Then open http://localhost:8501.
 | **NASA POWER** daily (T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, GWETTOP, GWETROOT, ALLSKY_SFC_SW_DWN, WS2M), 2001 → present | heat, rain, ET₀, soil wetness, crop simulations | API, no login ✅ |
 | **MODIS MOD13Q1 v6.1** NDVI 250 m / 16-day, 2015 → present | vegetation cycle, bare-field detection | ORNL DAAC web service, no login ✅ |
 | **MODIS MCD12Q1** land cover | confirms each preset point is cropland | ORNL DAAC ✅ |
-| **SMAP SPL3SMP_E.006** 9 km | satellite soil moisture | ✅ Faisalabad cached (2015-04 → 2026-10). Others: `python -m scripts.fetch_smap --lat .. --lon ..` (Earthdata login) or download from AppEEARS and run `python -m scripts.convert_smap <file>.csv` |
+| **SMAP SPL3SMP_E.006** 9 km | satellite soil moisture | ✅ all 6 regions cached (2015-04 → 2026-10; raw AppEEARS files in `data/raw/appeears/`). New points: `python -m scripts.fetch_smap --lat .. --lon ..` (Earthdata login) or download from AppEEARS and run `python -m scripts.convert_smap <file>.csv` |
 | **GPM IMERG** 0.1° | rainfall cross-check | Earthdata login (next step) 🔑 |
 
 ## How the engine works (short version)
@@ -67,6 +88,7 @@ All crop parameters are in `data/crop_knowledge/crops.csv`, each with its source
 ## Project structure
 
 ```
+docs/                     public website (GitHub Pages): index.html, app.js, i18n.js, data/*.json
 app.py                    navigation + sidebar
 views/                    the 7 pages
 src/
