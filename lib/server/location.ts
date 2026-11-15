@@ -87,20 +87,35 @@ async function loadCustom(lat: number, lon: number, key: string): Promise<Locati
   let srtm: LocationData["srtm"] = null;
   let fetchedAt = "";
   let db: Awaited<ReturnType<typeof getDb>> | null = null;
+  let stale: { power: RawPower; srtm: LocationData["srtm"]; fetchedAt: string } | null = null;
   try {
     db = await getDb();
-    const rows = await db.query<{ power_gz: Uint8Array; srtm: LocationData["srtm"]; fetched_at: Date }>(
-      "select power_gz, srtm, fetched_at from location_cache where key = $1 and fetched_at > now() - interval '30 days'", [key]);
+    const rows = await db.query<{ power_gz: Uint8Array; srtm: LocationData["srtm"]; fetched_at: Date; fresh: boolean }>(
+      "select power_gz, srtm, fetched_at, fetched_at > now() - interval '30 days' as fresh from location_cache where key = $1", [key]);
     if (rows[0]) {
-      power = JSON.parse(gunzipSync(Buffer.from(rows[0].power_gz)).toString("utf8"));
-      srtm = rows[0].srtm;
-      fetchedAt = new Date(rows[0].fetched_at).toISOString().slice(0, 10);
+      const cached = {
+        power: JSON.parse(gunzipSync(Buffer.from(rows[0].power_gz)).toString("utf8")) as RawPower,
+        srtm: rows[0].srtm,
+        fetchedAt: new Date(rows[0].fetched_at).toISOString().slice(0, 10),
+      };
+      if (rows[0].fresh) ({ power, srtm, fetchedAt } = cached);
+      else stale = cached;
     }
   } catch (e) {
     console.error("[location cache]", e instanceof Error ? e.message : e);
   }
   if (!power) {
-    [power, srtm] = await Promise.all([fetchPower(lat, lon), fetchSrtm(lat, lon).catch(() => null)]);
+    try {
+      [power, srtm] = await Promise.all([fetchPower(lat, lon), fetchSrtm(lat, lon).catch(() => null)]);
+    } catch (e) {
+      // NASA POWER is down or slow: an older download of the same point is far better than an error page.
+      if (!stale) throw e;
+      console.error(`[location] POWER failed for ${key}, serving cached copy from ${stale.fetchedAt}`);
+      return {
+        key, kind: "custom", region: null, name: key, lat, lon, zone: null, power: stale.power,
+        powerSource: `NASA POWER (downloaded ${stale.fetchedAt})`, ndvi: null, smap: null, imerg: null, srtm: stale.srtm, landcover: null,
+      };
+    }
     fetchedAt = new Date().toISOString().slice(0, 10);
     if (db) {
       await db.query(
@@ -123,11 +138,18 @@ async function fetchPower(lat: number, lon: number): Promise<RawPower> {
     parameters: POWER_COLS.join(","), community: "AG", longitude: String(lon), latitude: String(lat),
     start: "20010101", end, format: "JSON", "time-standard": "LST",
   }).toString();
+  // The whole download (all attempts) must finish well inside the 60 s function limit.
+  const deadline = Date.now() + 45_000;
   for (let attempt = 0; attempt < 3; attempt++) {
+    const left = deadline - Date.now();
+    if (left < 4000) break;
     try {
-      const r = await fetch(url, { signal: AbortSignal.timeout(25_000), headers: { "User-Agent": "FieldShift/2.0 (crop-rotation advisory)" } });
+      const r = await fetch(url, { signal: AbortSignal.timeout(Math.min(22_000, left)), headers: { "User-Agent": "FieldShift/2.0 (crop-rotation advisory)" } });
       if (r.status >= 500 || r.status === 429) throw new Error(`POWER ${r.status}`);
-      if (!r.ok) throw new LocationError("nasa_unavailable");
+      if (!r.ok) {
+        console.error(`[POWER] ${r.status} for ${lat},${lon}:`, (await r.text()).slice(0, 300));
+        throw new LocationError("nasa_unavailable");
+      }
       const j = (await r.json()) as { header?: { fill_value?: number }; properties: { parameter: Record<string, Record<string, number>> } };
       const fill = j.header?.fill_value ?? -999;
       const params = j.properties.parameter;
@@ -146,8 +168,9 @@ async function fetchPower(lat: number, lon: number): Promise<RawPower> {
       if (out.dates.length < 3650) throw new LocationError("nasa_unavailable");
       return out;
     } catch (e) {
-      if (e instanceof LocationError || attempt === 2) throw e instanceof LocationError ? e : new LocationError("nasa_unavailable");
-      await new Promise((res) => setTimeout(res, 1500 * (attempt + 1)));
+      if (e instanceof LocationError) throw e;
+      console.error(`[POWER] attempt ${attempt + 1} for ${lat},${lon} failed:`, e instanceof Error ? e.message : e);
+      if (attempt < 2) await new Promise((res) => setTimeout(res, 1500 * (attempt + 1)));
     }
   }
   throw new LocationError("nasa_unavailable");

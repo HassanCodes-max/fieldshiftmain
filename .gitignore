@@ -20,3 +20,7 @@ __pycache__/
 Thumbs.db
 *.crdownload
 ~$*
+
+.vercel
+.env*
+!.env.example
