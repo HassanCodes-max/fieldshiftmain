@@ -1,0 +1,7 @@
+region_id,name,district,lat,lon,zone,typical_rotation,note
+faisalabad,Faisalabad (rural),Faisalabad,31.30,73.25,Mixed cropping zone,Wheat with sugarcane / maize / cotton,Representative agricultural point east of the city - not a farm location
+sheikhupura,Sheikhupura (rural),Sheikhupura,31.65,73.80,Rice-wheat zone,Rice → Wheat,Representative agricultural point - not a farm location
+gujranwala,Gujranwala (rural),Gujranwala,32.10,73.95,Rice-wheat zone,Rice → Wheat,Representative agricultural point - not a farm location
+hafizabad,Hafizabad (rural),Hafizabad,32.00,73.60,Rice-wheat zone,Rice → Wheat,Representative agricultural point - not a farm location
+okara,Okara (rural),Okara,30.70,73.35,Mixed cropping zone,Maize → Wheat,Representative agricultural point - not a farm location
+multan,Multan (rural),Multan,30.10,71.60,Cotton-wheat zone,Cotton → Wheat,Representative agricultural point - not a farm location

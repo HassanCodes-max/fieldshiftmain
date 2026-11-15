@@ -1,0 +1,10 @@
+{
+  "centre_class": 12,
+  "class_name": "Cropland",
+  "cropland_fraction": 1.0,
+  "is_cropland": true,
+  "year": 2023,
+  "n_pixels": 25,
+  "lat": 31.65,
+  "lon": 73.8
+}

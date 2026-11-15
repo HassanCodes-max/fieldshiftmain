@@ -1,6 +1,22 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.vercel
+# local database (PGlite) and env files — never commit secrets
+.data/
+.env
+.env.*
+!.env.example
+# Python pipeline
 .venv/
 __pycache__/
 *.pyc
-.streamlit/secrets.toml
-fieldshift-main/
+.pytest_cache/
+# OS / editors
+.DS_Store
+Thumbs.db
 *.crdownload
+~$*
