@@ -22,7 +22,20 @@ with t1:
 | **MODIS MOD13Q1 v6.1** | NDVI + pixel reliability | 250 m, 16-day | 2015 → latest | ORNL DAAC MODIS Web Service, no login | ✅ live |
 | **MODIS MCD12Q1** | IGBP land cover (cropland check of preset points) | 500 m, yearly | 2022 | ORNL DAAC | ✅ used to verify presets |
 | **SMAP SPL3SMP_E v6** | Surface soil moisture | 9 km, daily | 2015 → | Earthdata login (AppEEARS) | ✅ all 6 preset regions loaded |
-| **GPM IMERG** (Final, monthly) | Precipitation | 0.1° | 2000 → | Earthdata login | 🔑 planned cross-check |
+| **GPM IMERG** (Final, monthly) | Precipitation | 0.1° | 2000 → | Earthdata login | 🔑 used in the public website; planned here |
+| **Punjab AMIS** (amis.pk) | Wholesale prices: wheat, rice/paddy, maize, moong, seed cotton | market level, Rs/100 kg | daily snapshots (first: 15 Nov 2026) | public web page, `python -m scripts.fetch_amis` | ✅ snapshot |
+| ISRIC SoilGrids · GRACE/GRACE-FO · MODIS MOD16 | soil texture · groundwater · evapotranspiration | — | — | — | ⏳ planned, not used |
+""")
+    st.markdown("""
+**Where every number comes from**
+
+| Label | Meaning | Examples |
+|---|---|---|
+| 🟢 **Observed** | measured by a satellite or reported by a market | MODIS NDVI, SMAP soil moisture, MCD12Q1 land cover, AMIS prices |
+| 🔵 **Model / reanalysis** | satellite data blended with a weather model | NASA POWER temperature, rain, soil wetness (MERRA-2) |
+| 🟡 **Estimated** | calculated by Field Shift from the above | ET₀, irrigation need, factor scores |
+| 🟡 **Forecast** | statistical outlook, with a tested error | 6-week NDVI outlook |
+| 🔵 **Farmer-entered** | your answers on My Farm | soil type, salinity test, water supply, market access |
 """)
     st.markdown("""
 **How the datasets are aligned**
@@ -79,6 +92,21 @@ is the **net irrigation need**, simulated separately for each of the last 10 yea
     st.markdown("**Hard constraints:** if a rotation does not fit into one year, or contains a crop outside its "
                 "recommended agro-ecological zone, its total is multiplied by 0.7 and it is labelled *Not recommended "
                 "as-is* — a weighted average must not hide a deal-breaker.")
+    st.markdown("#### 4 · 6-week greenness outlook (machine learning)")
+    st.markdown("""
+- **Target:** the MODIS NDVI anomaly (observed minus the median for that 16-day slot) 16, 32 and 48 days ahead.
+- **Inputs:** the last three anomalies and the expected seasonal change of the normal curve.
+- **Model:** ridge regression (λ = 1), one per lead time, trained on all 6 preset districts (2015–2026).
+- **Validation:** leave-one-year-out. The climatology and the model are re-fitted without the test year, and the
+  result is compared with two baselines: *normal year* and *today's anomaly persists*. The table on
+  **NASA Insights** shows the scores. The 80% range is taken from the validation errors.
+- **Use:** an early signal of whether the area is greener or browner than usual. It is not a yield forecast and
+  it does not change the rotation scores.
+""")
+    st.markdown("#### 5 · Market prices")
+    st.markdown("AMIS wholesale prices are shown on **Market Intelligence** for context. The market *score* uses "
+                "your own answer (can you sell this crop?), because wholesale prices without production costs "
+                "and farm-gate deductions say little about profit.")
     st.markdown("`wᵢ` are your slider values on **My Farm**; `sᵢ(R)` are the factor scores above. "
                 "**Confidence** rises with: ≥ 8 simulated years, NDVI loaded, soil salinity tested, all markets known, "
                 "SMAP loaded.")

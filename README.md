@@ -1,133 +1,209 @@
 # 🌾 Field Shift
 
-**NASA Earth observations → smarter crop rotation decisions for farmers in Punjab, Pakistan.**
-NASA Space Apps Challenge project.
-
-Field Shift takes a farmer's location, soil, water situation and priorities, puts 25 years of real NASA data behind them,
-and compares crop rotations (e.g. *Rice → Wheat* vs *Maize → Wheat → Mungbean*) for water use, soil health,
-climate risk, soil and local fit, calendar fit and market access. The result is a ranked, explained recommendation
-with benefits, risks, evidence and data gaps. It is a decision aid to take to an extension officer, not a yield
-prediction.
-
-Field Shift has **two parts**:
-
-| Part | For whom | Where |
-|---|---|---|
-| 🌐 **Public website** (`docs/`): 5 tap-to-answer questions, English / اردو, works on any phone, no server | Farmers, judges, anyone | **https://maavia138.github.io/fieldshift/** (GitHub Pages, after step 2 below) |
-| 🔬 **Analysis app** (Streamlit): map clicks for any location, what-if climate sliders, full charts and downloads | Extension officers, researchers | Run locally, or deploy free on Streamlit Community Cloud |
-
-Website built by [HassanCodes-max](https://github.com/HassanCodes-max); data pipeline and engine are shared.
-The website's numbers are produced by the same engine (see [docs/README.md](docs/README.md)).
-
-## 🚀 Make it public (free)
-
-1. **Upload to GitHub:** `git add . ; git commit -m "Add website and SMAP for all regions" ; git push`
-2. **Website for everyone:** on GitHub open the repo → **Settings → Pages** → *Source: Deploy from a branch* →
-   Branch **main**, folder **/docs** → Save. After about 1 minute it is live at
-   `https://<your-github-username>.github.io/fieldshift/`. It works on any phone or laptop, anywhere.
-3. **Analysis app online (optional):** go to https://share.streamlit.io → sign in with GitHub → *Create app* →
-   repo `fieldshift`, branch `main`, file `app.py` → Deploy. You get a public `https://….streamlit.app` link.
-
-To preview the website on your own laptop: `cd docs ; python -m http.server 8000` → http://localhost:8000
+**Crop-rotation decision support for farmers in Punjab, Pakistan, built on NASA Earth observations.**
+A NASA Space Apps Challenge project.
 
 ---
 
-## Quick start
+## The problem
 
-```powershell
-cd D:\fieldshift
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m streamlit run app.py
-```
+Punjab's dominant **rice → wheat** rotation feeds millions of people, but it is under pressure:
 
-Then open http://localhost:8501.
+- 💧 **Water is running short.** Puddled rice is one of the thirstiest crops in the region, and groundwater is falling.
+- 🌡️ **Heat stress hits sensitive stages**, such as wheat grain filling in March–April and rice flowering.
+- 🔥 **Burning rice straw** damages soil and adds to the winter smog.
+- 🟫 **Fields lie bare** for weeks between crops, losing soil moisture and organic matter.
 
-- NASA data for the 6 preset regions is already cached in `data/raw/`, so the demo works offline.
-- To re-download: `python -m scripts.prefetch --refresh`.
-- To run the smoke test of every page: `python tests/test_pages.py`.
+Better rotations exist, such as maize → wheat, adding mungbean, or cotton → wheat in the south. The evidence needed
+to compare them is spread across satellite archives, crop-water models and soil science that farmers cannot easily
+use.
 
-## What the app does (pages)
+## The solution
 
-| Page | What the farmer / judge sees |
-|---|---|
-| 🏠 **Home** | The story, how it works, which NASA datasets are inside |
-| 🧑‍🌾 **My Farm** | Clickable satellite map or 6 preset districts; soil type, salinity test, irrigation source and reliability, waterlogging, residue burning, current rotation, market access per crop; priority sliders; save/load profile |
-| 🛰️ **NASA Insights** | KPIs and plain-language findings; monthly temperature, rain vs. evaporative demand, soil wetness, MODIS NDVI seasonal cycle with detected bare-field periods, full NDVI record, long-term trends, anomaly heatmaps, CSV downloads |
-| 📅 **Seasonal Analysis** | Month × stress heatmap (heat, water deficit, dry soil, heavy rain, cold, low vegetation); months where stresses overlap; current rotation overlaid on the MODIS bare periods; season table; hot-spring vs. wheat greenness (POWER × MODIS) |
-| 🔄 **Compare Rotations** | Pick up to 4 alternatives or build your own; **what-if climate sliders** (+°C, ±% rain); overall score, crop calendar, factor scores, irrigation need per crop, year-to-year water need, full score breakdown |
-| ✅ **Recommendations** | Ranked cards with benefits, risks, NASA evidence, confidence; robustness check; information gaps; extension-officer checklist; **downloadable HTML report** |
-| 📚 **Data & Methods** | Every dataset, formula, assumption, crop parameter and limitation |
+Field Shift takes a farmer's location, soil, water supply, current crops and priorities. It puts 25 years of NASA
+data behind them and compares crop rotations on six factors: **water use, soil health, climate resilience, soil
+and local fit, calendar fit and market access**. The result is a ranked recommendation in plain language that
+lists benefits, risks, the NASA evidence behind it, a confidence level and the information still missing.
 
-## NASA data used
+It is a **decision aid to discuss with an agriculture extension officer**. It does not predict yield or profit.
 
-| Dataset | Use | Access |
+Field Shift has two parts that share one data pipeline and engine:
+
+| Part | For whom | What it offers |
 |---|---|---|
-| **NASA POWER** daily (T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, GWETTOP, GWETROOT, ALLSKY_SFC_SW_DWN, WS2M), 2001 → present | heat, rain, ET₀, soil wetness, crop simulations | API, no login ✅ |
-| **MODIS MOD13Q1 v6.1** NDVI 250 m / 16-day, 2015 → present | vegetation cycle, bare-field detection | ORNL DAAC web service, no login ✅ |
-| **MODIS MCD12Q1** land cover | confirms each preset point is cropland | ORNL DAAC ✅ |
-| **SMAP SPL3SMP_E.006** 9 km | satellite soil moisture | ✅ all 6 regions cached (2015-04 → 2026-10; raw AppEEARS files in `data/raw/appeears/`). New points: `python -m scripts.fetch_smap --lat .. --lon ..` (Earthdata login) or download from AppEEARS and run `python -m scripts.convert_smap <file>.csv` |
-| **GPM IMERG** 0.1° | rainfall cross-check | Earthdata login (next step) 🔑 |
+| 🌐 **Public website** (`docs/`) | Farmers and the general public | 5 tap-to-answer questions, English and اردو, works on any phone, no server, live 7-day weather tips |
+| 🔬 **Analysis platform** (Streamlit) | Extension officers, researchers, judges | 8 pages, any map location, scenario analysis, full charts, market prices, downloadable data and reports |
 
-## How the engine works (short version)
+---
 
-1. **Schedule:** place each crop of a rotation in its regional sowing window. This gives the turnaround days, late
-   sowing, bare days, and whether the sequence fits in 12 months.
-2. **Simulate on real weather:** for each of the last 10 years, run every crop through that year's daily NASA POWER
-   weather:
-   - FAO-56 crop coefficient × Hargreaves ET₀ → crop water use;
-   - a daily soil-water bucket with NASA rain → **net irrigation need**;
-   - count heat, frost and heavy-rain days inside each crop's **sensitive growth stage**.
-3. **Score six factors (0–100)** and combine them with the farmer's slider weights: `Score = Σ wᵢ sᵢ / Σ wᵢ`.
-   A sequence that doesn't fit into one year, or a crop outside its agro-ecological zone, is a hard gate (×0.7).
-4. **Explain:** produce evidence sentences with NASA numbers, benefits vs. the current rotation, risks, data gaps and
-   a confidence level.
+## Features of the analysis platform
 
-All crop parameters are in `data/crop_knowledge/crops.csv`, each with its source and verification status.
+| Page | What it shows |
+|---|---|
+| **Overview** | Farm summary, satellite map, latest NDVI and SMAP readings with dates, heat and rainfall summary, 12-month risk strip, 6-week greenness outlook, recommended next action, data-source status |
+| **My Farm** | 6 preset districts or any point on a satellite map; soil texture, salinity test, irrigation source and reliability, waterlogging, residue burning, current rotation, market access per crop, priority weights; save and load a profile |
+| **NASA Insights** | Temperature, rainfall vs. evaporative demand, soil moisture (SMAP and POWER), MODIS NDVI cycle with detected bare periods, full NDVI record, long-term trends, anomaly heatmaps, CSV downloads |
+| **Seasonal Analysis** | Month × stress heatmap (heat, water deficit, dry soil, heavy rain, cold, low vegetation), months where stresses overlap, current rotation against MODIS bare periods |
+| **Crop Rotation** | Compare up to 4 rotations or build your own; Baseline, +1.5 °C and −10% rain scenarios; crop calendar, factor scores, irrigation need per crop and per year, full score breakdown |
+| **Recommendations** | Ranked cards with benefits, risks, NASA evidence and confidence; robustness check; information gaps; extension-officer checklist; downloadable HTML report |
+| **Market Intelligence** | Punjab AMIS wholesale prices for wheat, rice and paddy, maize, moong and seed cotton by market; availability vs. the farmer's answers; price history |
+| **Data & Methods** | Every dataset, formula, assumption, crop parameter and limitation |
+
+Every number is labelled by origin: **Observed** (satellite or market), **Model / reanalysis**, **Estimated**
+(calculated by Field Shift), **Forecast**, or **Farmer-entered**.
+
+---
+
+## Data
+
+| Dataset | Provider | Resolution | Period | Use | Status |
+|---|---|---|---|---|---|
+| **NASA POWER** daily: T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, GWETTOP, GWETROOT, ALLSKY_SFC_SW_DWN, WS2M | NASA LaRC | ~0.5° × 0.625° | 2001 → 2026 | heat, rain, ET₀, soil wetness, crop simulations | ✅ in use |
+| **MODIS MOD13Q1 v6.1** NDVI + pixel reliability | NASA LP DAAC via ORNL DAAC | 250 m, 16-day | 2015 → 2026 | vegetation cycle, bare-field detection, greenness outlook | ✅ in use |
+| **MODIS MCD12Q1** land cover | NASA LP DAAC via ORNL DAAC | 500 m, yearly | 2022 | confirms each district point is cropland | ✅ in use |
+| **SMAP SPL3SMP_E v6** surface soil moisture | NASA NSIDC DAAC via AppEEARS | 9 km, daily | Apr 2015 → Oct 2026 | soil-moisture pattern, confidence | ✅ all 6 districts |
+| **GPM IMERG** Final monthly | NASA GES DISC | 0.1° | 2000 → | rainfall cross-check of POWER | ✅ public website |
+| **Punjab AMIS** wholesale prices | Directorate of Agriculture (Economics & Marketing) Punjab | market level, Rs/100 kg | daily snapshots from 15 Nov 2026 | market context | ✅ in use |
+| Local crop knowledge | Punjab Agriculture Department, AARI, PARC, FAO | district | — | sowing windows, crop coefficients, thresholds, agro-ecological zones | ✅ `data/crop_knowledge/` |
+| ISRIC SoilGrids · GRACE/GRACE-FO · MODIS MOD16 | — | — | — | soil texture, groundwater, evapotranspiration | ⏳ planned |
+
+**Study districts:** Faisalabad, Sheikhupura, Gujranwala, Hafizabad, Okara and Multan. They cover the Rice-wheat,
+Mixed and Cotton-wheat agro-ecological zones.
+
+**Alignment:** each dataset is sampled at the farm coordinate and keeps its native resolution. MODIS NDVI is the
+median of good-quality pixels in a ~2 × 2 km window. POWER gaps of up to 3 days are interpolated; crop seasons with
+longer gaps are dropped. SMAP fill values are removed, and the AM and PM overpasses are averaged.
+
+**SMAP quality:** each district has about 2,500–2,850 valid days. The share flagged "recommended quality" by SMAP
+ranges from 88% (Okara) and 43–57% (Sheikhupura, Gujranwala, Hafizabad) to 0% (Faisalabad, Multan), where the 9 km
+pixel mixes fields, towns and canals. SMAP is therefore used for seasonal patterns and confidence, not inside the
+irrigation simulation.
+
+---
+
+## Method
+
+### 1 · Crop water need
+- Reference evapotranspiration (ET₀) uses the FAO-56 Hargreaves equation:
+  `ET₀ = 0.0023 (T_mean + 17.8) √(T_max − T_min) · Ra`.
+- Crop water use is `ET_c = K_c(t) · ET₀`, using the four-stage FAO-56 crop-coefficient (K_c) curve.
+- A daily soil-water bucket, sized by soil texture, receives NASA rainfall. When it empties, an irrigation refills
+  it. Rice adds puddling and daily seepage and percolation.
+- The total of the irrigations is the **net irrigation need**, simulated on each of the last 10 years of observed
+  weather.
+
+### 2 · Six factor scores (0–100)
+| Factor | Calculation |
+|---|---|
+| 💧 Water saving | `100 × (1 − irrigation need / 1800 mm)`, minus up to 40 if the need exceeds the farmer's water supply |
+| 🌱 Soil health | legume in the rotation, crop-family diversity, puddled rice, residue burning, bare days |
+| 🌡️ Climate resilience | share of sensitive-stage days above the heat threshold, frost, heavy rain; heat trend |
+| 🧪 Soil & local fit | texture fit, FAO-29 salinity yield potential `100 − b(ECe − a)`, waterlogging, agro-ecological zone |
+| 📅 Calendar fit | days of late sowing; 0 if the sequence does not fit into one year |
+| 🏪 Market | farmer's answer per crop: Yes 100 · Unknown 60 · No 10 |
+
+### 3 · Weighted result
+`Score = Σ wᵢ sᵢ / Σ wᵢ`, where the weights `wᵢ` are the farmer's priorities. A rotation that does not fit
+into one year, or that contains a crop outside its agro-ecological zone, has its score multiplied by 0.7 and is
+labelled *Not recommended as-is*. Confidence depends on the number of simulated years, NDVI and SMAP coverage, a
+salinity test and known markets.
+
+### 4 · 6-week greenness outlook (machine learning)
+A ridge regression predicts the MODIS NDVI anomaly 16, 32 and 48 days ahead. The anomaly is the observed value
+minus the normal for that 16-day period. The inputs are the last three anomalies and the expected seasonal change.
+The model is trained on all 6 districts for 2015–2026 and tested leave-one-year-out against two baselines:
+
+| Lead | Mean absolute error (NDVI) | vs. "anomaly persists" | vs. "normal year" |
+|---|---|---|---|
+| 16 days | 0.042 | 16% better | 5% better |
+| 32 days | 0.044 | 24% better | 1% better |
+| 48 days | 0.045 | 28% better | no better |
+
+It is a short-range signal of whether an area is greener or browner than usual. It is not a yield forecast and
+does not change the rotation scores.
+
+### 5 · Scenarios
+The +1.5 °C and −10% rain scenarios shift the observed record uniformly and rerun the whole engine. They are
+sensitivity tests, not climate projections.
+
+---
+
+## Key findings (Faisalabad, loam soil, moderate water supply)
+
+- June averages about **43 °C** daily maximum, with about 24 days at or above 40 °C. Evaporative demand exceeds
+  rainfall in 10 of 12 months.
+- **Rice → Wheat needs about 1,390 mm of net irrigation per year; Maize → Wheat about 700 mm.**
+- MODIS shows two green peaks per year (rabi and kharif) and about 95 bare days in the current rotation.
+- **Rotations ranked first by the engine:**
+
+  | District | Top rotation |
+  |---|---|
+  | Sheikhupura, Gujranwala, Hafizabad (Rice-wheat zone) | Maize → Wheat → Mungbean |
+  | Faisalabad and Okara (Mixed zone) | Cotton → Wheat |
+  | Multan (Cotton-wheat zone) | Maize → Wheat and Cotton → Wheat |
+
+---
+
+## Technology
+
+| Layer | Tools |
+|---|---|
+| Data pipeline and engine | Python, pandas, NumPy, requests; NASA POWER API, ORNL DAAC MODIS web service, NASA AppEEARS, GES DISC |
+| Analysis platform | Streamlit, Plotly, Folium (Esri World Imagery) |
+| Public website | HTML, CSS and JavaScript with no framework, hand-built SVG charts, English and Urdu with right-to-left layout, Open-Meteo forecast, GitHub Pages |
+| Testing | headless rendering test of every page (`tests/test_pages.py`) |
 
 ## Project structure
 
 ```
-docs/                     public website (GitHub Pages): index.html, app.js, i18n.js, data/*.json
-app.py                    navigation + sidebar
-views/                    the 7 pages
+app.py                    navigation, sidebar, location selector, step tracker
+views/                    the 8 pages of the analysis platform
 src/
-  config.py               paths, constants
-  data_fetch.py           NASA POWER, MODIS (ORNL), land cover, SMAP loader
-  preprocessing.py        cleaning, ET0 (FAO-56), monthly/seasonal aggregation
+  config.py               paths and constants
+  data_fetch.py           NASA POWER, MODIS (ORNL), land cover, SMAP loading and conversion
+  preprocessing.py        cleaning, FAO-56 ET0, monthly and seasonal aggregation
   climate_analysis.py     climatology, trends, stress matrix, insights
-  vegetation_analysis.py  NDVI climatology, bare-period detection, peaks
-  soil_analysis.py        texture, salinity (FAO-29), soil-water assumptions
+  vegetation_analysis.py  NDVI climatology, bare-period detection, seasonal peaks
+  soil_analysis.py        texture, FAO-29 salinity, soil-water assumptions
   rotation_engine.py      scheduling, season simulation, scoring, explanations
-  visualization.py        Plotly charts (colour follows crop/rotation)
+  ndvi_forecast.py        6-week NDVI outlook (ridge regression, leave-one-year-out validation)
+  visualization.py        Plotly charts
   report.py               printable farmer report
-  ui.py                   state, styling, cached data
-scripts/prefetch.py       download data for preset regions
-scripts/fetch_smap.py     SMAP via NASA AppEEARS (needs Earthdata login)
-scripts/convert_smap.py   convert a manually downloaded AppEEARS SMAP CSV
-data/raw/                 cached NASA data
-data/crop_knowledge/      crops.csv, rotations.csv, regions.csv
-tests/test_pages.py       renders every page headlessly
+  ui.py                   state, design system, shared components, cached data
+scripts/                  data download and conversion (POWER/MODIS, SMAP, AMIS)
+data/crop_knowledge/      crops.csv, rotations.csv, regions.csv (with sources and verification status)
+data/raw/                 cached NASA data, AppEEARS SMAP downloads, AMIS price snapshots
+docs/                     public website
+tests/                    page rendering test
 ```
 
-## 5-minute demo script
-
-1. **Home:** "A farmer near Faisalabad grows rice and wheat every year. Water is getting less reliable and summers
-   hotter. Should they change?"
-2. **My Farm:** click the satellite map, set soil = loam, water = Moderate, priority = save water.
-3. **NASA Insights:** June averages 43 °C with about 24 days ≥ 40 °C; evaporative demand exceeds rain in 10 of 12
-   months. In the NDVI tab, MODIS shows two green peaks and a bare period after the wheat harvest.
-4. **Seasonal Analysis:** the stress calendar shows May–June as a heat and water-deficit hot spot. The current
-   rotation leaves the field bare for about 95 days.
-5. **Compare Rotations:** Rice → Wheat needs about 1,390 mm/yr of net irrigation; Maize → Wheat about 700 mm.
-   Move the +°C slider and watch the risks change.
-6. **Recommendations:** walk through the top-ranked card (benefits, risks, NASA evidence, confidence), then
-   download the report.
-7. **Data & Methods:** "every number is traceable — and here's what our data cannot tell you."
+---
 
 ## Limitations
 
-- These are relative suitability scores under documented assumptions, not yield or profit predictions.
-- Data is regional (POWER ≈ 50 km, MODIS window 2 × 2 km, SMAP 9 km), not field-level.
-- POWER soil wetness is model-based and does not see irrigation.
-- Crop calendars and thresholds are regional guidance and need local verification.
+- Scores show **relative suitability** under documented assumptions. They are not yield, profit or exact
+  water-saving predictions, and not a probability of success.
+- Data is **regional, not field-level**: POWER ≈ 50 km, SMAP 9 km, MODIS window 2 × 2 km.
+- POWER soil wetness is model-based (MERRA-2) and does not see irrigation. SMAP measures only the top ~5 cm.
+- POWER shows Faisalabad's mean daily maximum about 0.8 °C lower in 2013–2025 than in 2001–2012. This should be
+  checked against station data.
+- Crop calendars, heat thresholds and percolation rates are regional guidance and are marked "verify locally".
+- AMIS prices are wholesale market prices, not farm-gate prices, and the history starts in November 2026.
+- Soil-health rule weights are expert heuristics, documented so they can be challenged.
+
+## Credits
+
+- Public website: [HassanCodes-max](https://github.com/HassanCodes-max)
+- Analysis platform, data pipeline and engine: the Field Shift team
+
+## References
+
+- NASA POWER Project, NASA Langley Research Center. https://power.larc.nasa.gov
+- Didan, K. (2021). MOD13Q1 MODIS/Terra Vegetation Indices 16-Day L3 Global 250m SIN Grid V061. NASA LP DAAC.
+- Friedl, M., Sulla-Menashe, D. (2022). MCD12Q1 MODIS/Terra+Aqua Land Cover Type Yearly L3 Global 500m V061. NASA LP DAAC.
+- O'Neill, P. E., et al. SMAP Enhanced L3 Radiometer Global Daily 9 km EASE-Grid Soil Moisture (SPL3SMP_E), Version 6. NASA NSIDC DAAC.
+- Huffman, G. J., et al. GPM IMERG Final Precipitation L3 1 month 0.1° (GPM_3IMERGM) V07. NASA GES DISC.
+- Allen, R. G., Pereira, L. S., Raes, D., Smith, M. (1998). *Crop evapotranspiration.* FAO Irrigation and Drainage Paper 56.
+- Ayers, R. S., Westcot, D. W. (1985). *Water quality for agriculture.* FAO Irrigation and Drainage Paper 29.
+- Maas, E. V., Hoffman, G. J. (1977). Crop salt tolerance: current assessment. *J. Irrigation and Drainage Division*, ASCE.
+- Punjab AMIS, Directorate of Agriculture (Economics & Marketing) Punjab. http://www.amis.pk

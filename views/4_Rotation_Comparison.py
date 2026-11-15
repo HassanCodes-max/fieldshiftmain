@@ -45,6 +45,14 @@ with c1:
 with c2:
     st.markdown("**🌡️ What-if climate scenario**")
     sc = st.session_state.scenario
+    presets = {"Baseline": (0.0, 0), "+1.5 °C": (1.5, 0), "−10% rain": (0.0, -10), "+1.5 °C & −10%": (1.5, -10)}
+    pc = st.columns(len(presets))
+    for col, (lbl, (pt, pr)) in zip(pc, presets.items()):
+        on = (sc["temp"], sc["rain"]) == (pt, pr)
+        if col.button(lbl, key=f"preset_{lbl}", type="primary" if on else "secondary", width="stretch"):
+            st.session_state.scenario = {"temp": pt, "rain": pr}
+            st.rerun()
+    st.caption("Hypothetical scenarios, not weather forecasts.")
     t = st.slider("Warmer by (°C)", 0.0, 3.0, float(sc["temp"]), 0.5,
                   help="Adds this amount to every day's temperature in the NASA record.")
     r = st.slider("Rainfall change (%)", -30, 30, int(sc["rain"]), 5)

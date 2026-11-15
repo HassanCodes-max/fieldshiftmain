@@ -9,7 +9,7 @@ from streamlit.testing.v1 import AppTest  # noqa: E402
 
 PAGES = ["views/0_Home.py", "views/1_Farm_Profile.py", "views/2_NASA_Insights.py",
          "views/3_Seasonal_Analysis.py", "views/4_Rotation_Comparison.py",
-         "views/5_Recommendations.py", "views/6_Data_and_Methods.py"]
+         "views/5_Recommendations.py", "views/7_Market.py", "views/6_Data_and_Methods.py"]
 
 at = AppTest.from_file(os.path.join(ROOT, "app.py"), default_timeout=240)
 at.run()

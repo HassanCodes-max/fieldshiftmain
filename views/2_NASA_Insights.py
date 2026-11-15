@@ -2,6 +2,7 @@ import streamlit as st
 
 from src import climate_analysis as CA
 from src import config as C
+from src import ndvi_forecast as N
 from src import soil_analysis as S
 from src import ui
 from src import vegetation_analysis as V
@@ -93,6 +94,41 @@ with tabs[3]:
         st.plotly_chart(VIZ.fig_ndvi_timeseries(b.ndvi), width="stretch")
         st.caption(f"Average share of high-quality pixels: {b.ndvi['good_pixel_fraction'].mean():.0%} "
                    "(MODIS pixel reliability 0–1). Cloudy monsoon composites are noisier.")
+
+        st.markdown("#### 🔮 6-week greenness outlook " + ui.badge("forecast", "ML forecast"), unsafe_allow_html=True)
+        model = ui.ndvi_model()
+        if model is None:
+            st.info("The outlook needs MODIS NDVI for at least two preset regions.")
+        else:
+            import plotly.graph_objects as go
+            o = N.outlook(model, st.session_state.profile["region_id"], b.ndvi)
+            st.markdown(N.describe(o))
+            hist = b.ndvi.tail(12)
+            clim = b.ndvi_clim.set_index("slot")["ndvi"]
+            t = o.table
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=list(t["date"]) + list(t["date"])[::-1], y=list(t["hi"]) + list(t["lo"])[::-1],
+                                     fill="toself", fillcolor="rgba(184,137,43,.18)", line=dict(width=0),
+                                     name="likely range (80%)", hoverinfo="skip"))
+            fig.add_trace(go.Scatter(x=hist["date"], y=hist["slot"].map(clim), name="normal for the date",
+                                     line=dict(color="#758078", dash="dot")))
+            fig.add_trace(go.Scatter(x=hist["date"], y=hist["ndvi"], name="MODIS observed", mode="lines+markers",
+                                     line=dict(color="#2F754B", width=3)))
+            fig.add_trace(go.Scatter(x=[hist["date"].iloc[-1]] + list(t["date"]),
+                                     y=[hist["ndvi"].iloc[-1]] + list(t["ndvi"]), name="outlook",
+                                     mode="lines+markers", line=dict(color="#B8892B", width=3, dash="dash")))
+            st.plotly_chart(VIZ._base(fig, None, yaxis_title="NDVI"), width="stretch")
+            sk = model.skill.rename(columns={
+                "days": "Days ahead", "mae_model": "Model error", "mae_normal": "'Normal year' error",
+                "mae_persist": "'Anomaly persists' error", "skill_vs_normal": "Better than normal year",
+                "skill_vs_persist": "Better than persistence", "n": "Test cases"}).drop(columns="lead")
+            st.markdown("**How good is it?** Tested on years the model never saw (leave-one-year-out, 6 districts). "
+                        "Error = mean absolute NDVI error.")
+            st.dataframe(sk.style.format({c: "{:.3f}" for c in sk.columns[1:4]} |
+                                         {c: "{:+.0%}" for c in sk.columns[4:6]}), hide_index=True, width="stretch")
+            st.caption("Honest reading: the model clearly beats 'today's anomaly persists' and slightly beats the "
+                       "seasonal norm at 16 days; by 48 days it is no better than the norm. It describes greenness of "
+                       "a ~2 × 2 km area and is not a yield forecast.")
 
 with tabs[4]:
     a, c = st.columns(2, gap="large")

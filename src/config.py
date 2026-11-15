@@ -4,12 +4,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 RAW = DATA / "raw"
-PROCESSED = DATA / "processed"
 KNOWLEDGE = DATA / "crop_knowledge"
-AGRI = DATA / "agriculture"
 
-for _p in (RAW, PROCESSED, AGRI):
-    _p.mkdir(parents=True, exist_ok=True)
+RAW.mkdir(parents=True, exist_ok=True)
 
 # NASA POWER
 POWER_DAILY_URL = "https://power.larc.nasa.gov/api/temporal/daily/point"

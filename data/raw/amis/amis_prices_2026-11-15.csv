@@ -1,0 +1,57 @@
+commodity,crop,market,date,price,unit,source
+Rice Basmati Super (New),rice,Lahore,2026-11-15,30500.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Basmati Super (Old),rice,Lahore,2026-11-15,37000.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Maize,maize,Faisalabad,2026-11-15,7625.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Moong,mungbean,Faisalabad,2026-11-15,21750.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice (IRRI),rice,Faisalabad,2026-11-15,9500.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Basmati Super (New),rice,Faisalabad,2026-11-15,25000.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Basmati Super (Old),rice,Faisalabad,2026-11-15,26000.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat (New),rice,Faisalabad,2026-11-15,25000.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat Old,rice,Faisalabad,2026-11-15,29500.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Wheat,wheat,Faisalabad,2026-11-15,12875.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Maize,maize,Rawalpindi,2026-11-15,8000.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Moong,mungbean,Rawalpindi,2026-11-15,26500.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice (IRRI),rice,Rawalpindi,2026-11-15,10750.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Basmati Super (New),rice,Rawalpindi,2026-11-15,21500.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Basmati Super (Old),rice,Rawalpindi,2026-11-15,27500.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat (New),rice,Rawalpindi,2026-11-15,29000.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Wheat,wheat,Rawalpindi,2026-11-15,14100.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Maize,maize,Multan,2026-11-15,7188.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Moong,mungbean,Multan,2026-11-15,20875.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice (IRRI),rice,Multan,2026-11-15,9875.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat (New),rice,Multan,2026-11-15,31250.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat Old,rice,Multan,2026-11-15,32250.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Maize,maize,Bhakhar,2026-11-15,7250.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Moong,mungbean,Bhakhar,2026-11-15,18250.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat (New),rice,Bhakhar,2026-11-15,28000.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat Old,rice,Bhakhar,2026-11-15,30000.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Wheat,wheat,Bhakhar,2026-11-15,12600.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Maize,maize,Sahiwal,2026-11-15,5650.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Moong,mungbean,Sahiwal,2026-11-15,24100.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Basmati Super (New),rice,Sahiwal,2026-11-15,30800.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Basmati Super (Old),rice,Sahiwal,2026-11-15,33300.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Wheat,wheat,Sahiwal,2026-11-15,11150.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Maize,maize,Vehari,2026-11-15,6375.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice (IRRI),rice,Vehari,2026-11-15,11750.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat (New),rice,Vehari,2026-11-15,33750.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat Old,rice,Vehari,2026-11-15,30750.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Seed Cotton(Phutti),cotton,Vehari,2026-11-15,19250.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Paddy Basmati,rice,Lodhran,2026-11-15,10600.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Paddy Kainat,rice,Lodhran,2026-11-15,10600.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice (IRRI),rice,Lodhran,2026-11-15,11000.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat (New),rice,Lodhran,2026-11-15,33500.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Seed Cotton(Phutti),cotton,Lodhran,2026-11-15,19350.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Wheat,wheat,Lodhran,2026-11-15,11600.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Maize,maize,Mailsi,2026-11-15,6687.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Paddy Kainat,rice,Mailsi,2026-11-15,11750.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Seed Cotton(Phutti),cotton,Mailsi,2026-11-15,20375.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Moong,mungbean,Sialkot,2026-11-15,24750.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat (New),rice,Sialkot,2026-11-15,29600.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Basmati Super (New),rice,Jhelum,2026-11-15,28750.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat Old,rice,RajanPur,2026-11-15,32200.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat (New),rice,Chiniot,2026-11-15,27500.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Kainat Old,rice,Chiniot,2026-11-15,28500.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Moong,mungbean,TALAGANG,2026-11-15,30500.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Basmati Super (New),rice,TALAGANG,2026-11-15,28500.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Basmati Super (Old),rice,TALAGANG,2026-11-15,31500.0,Rs/100 kg (wholesale),http://www.amis.pk/
+Rice Basmati Super (New),rice,Sraialamgir,2026-11-15,30200.0,Rs/100 kg (wholesale),http://www.amis.pk/

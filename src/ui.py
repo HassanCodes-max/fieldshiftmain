@@ -19,34 +19,62 @@ DEFAULT_WEIGHTS = {"water": 5, "soil": 3, "climate": 2, "soilfit": 2, "calendar"
 
 CSS = """
 <style>
-:root { --fs-green:#2f6b2f; --fs-soil:#7a5230; --fs-ink:#1c1c1a; --fs-muted:#5f5e59; --fs-card:#ffffff;
-        --fs-line:#e6e4dc; --fs-cream:#f7f5ee; }
-.block-container { padding-top: 2rem; max-width: 1200px; }
-h1, h2, h3 { letter-spacing: -0.01em; }
-.fs-hero { background: linear-gradient(120deg, #1f4d2b 0%, #2f6b2f 45%, #8a6d2f 100%); color: #fff;
-           border-radius: 18px; padding: 2.2rem 2rem; margin-bottom: 1.2rem; }
-.fs-hero h1 { color:#fff; margin:0 0 .4rem 0; font-size: 2.4rem; }
-.fs-hero p { color:#f1efe6; font-size: 1.1rem; margin: 0; max-width: 46rem; }
-.fs-hero .tag { display:inline-block; background: rgba(255,255,255,.16); border-radius: 999px;
-                padding: .2rem .7rem; font-size: .8rem; margin-right: .35rem; margin-bottom: .8rem; }
-.fs-card { background: var(--fs-card); border: 1px solid var(--fs-line); border-radius: 14px;
-           padding: 1rem 1.1rem; height: 100%; }
-.fs-card h4 { margin: 0 0 .3rem 0; font-size: 1.02rem; color: var(--fs-ink); }
-.fs-card p { margin: 0; color: var(--fs-muted); font-size: .93rem; }
-.fs-step { font-size: 1.6rem; }
-.fs-kpi { background: var(--fs-cream); border-radius: 12px; padding: .8rem 1rem; }
-.fs-kpi .v { font-size: 1.6rem; font-weight: 700; color: var(--fs-ink); line-height: 1.1; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root { --fs-forest:#163D2B; --fs-green:#2F754B; --fs-sage:#E7F0E8; --fs-bg:#F8FAF6; --fs-ink:#202A24;
+        --fs-muted:#758078; --fs-card:#FFFFFF; --fs-line:#E1E8E2; --fs-gold:#B8892B; --fs-gold-bg:#FBF3E1;
+        --fs-shadow:0 1px 2px rgba(22,61,43,.06), 0 4px 14px rgba(22,61,43,.06); }
+html, body, [class*="css"], .stMarkdown, button, input, textarea, select { font-family: 'Inter', sans-serif; }
+.block-container { padding-top: 1.6rem; max-width: 1240px; }
+h1 { font-weight: 800; letter-spacing: -0.02em; color: var(--fs-forest); }
+h2, h3, h4 { letter-spacing: -0.01em; color: var(--fs-ink); font-weight: 700; }
+[data-testid="stSidebar"] { background: var(--fs-sage); border-right: 1px solid var(--fs-line); }
+[data-testid="stSidebarNav"] a span { font-weight: 500; }
+[data-testid="stMetric"] { background: var(--fs-card); border: 1px solid var(--fs-line); border-radius: 14px;
+                          padding: .8rem 1rem; box-shadow: var(--fs-shadow); }
+.stTabs [data-baseweb="tab-list"] { gap: .25rem; }
+.stTabs [data-baseweb="tab"] { border-radius: 10px 10px 0 0; padding: .45rem .9rem; }
+div[data-testid="stExpander"] { border-radius: 12px; border-color: var(--fs-line); }
+.stButton > button, .stDownloadButton > button { border-radius: 10px; font-weight: 600; }
+
+.fs-hero { background: var(--fs-forest); color: #fff; border-radius: 18px; padding: 2rem 2.1rem;
+           margin-bottom: 1.2rem; position: relative; overflow: hidden; }
+.fs-hero:after { content:""; position:absolute; right:-80px; top:-80px; width:320px; height:320px; border-radius:50%;
+                 background: radial-gradient(circle, rgba(47,117,75,.55), rgba(47,117,75,0) 70%); }
+.fs-hero h1 { color:#fff; margin:0 0 .5rem 0; font-size: 2.3rem; line-height: 1.15; }
+.fs-hero p { color:#D8E6DB; font-size: 1.05rem; margin: 0; max-width: 46rem; position: relative; z-index: 1; }
+.fs-hero .tag { display:inline-block; background: rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18);
+                border-radius: 999px; padding: .2rem .7rem; font-size: .78rem; margin: 0 .35rem .8rem 0; }
+.fs-card { background: var(--fs-card); border: 1px solid var(--fs-line); border-radius: 16px;
+           padding: 1rem 1.15rem; height: 100%; box-shadow: var(--fs-shadow); }
+.fs-card h4 { margin: .2rem 0 .3rem 0; font-size: 1rem; color: var(--fs-ink); }
+.fs-card p { margin: 0; color: var(--fs-muted); font-size: .9rem; line-height: 1.45; }
+.fs-step { font-size: 1.4rem; }
+.fs-kpi { background: var(--fs-card); border: 1px solid var(--fs-line); border-radius: 16px; padding: .9rem 1.05rem;
+          box-shadow: var(--fs-shadow); height: 100%; }
+.fs-kpi .t { font-size: .74rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--fs-muted); }
+.fs-kpi .v { font-size: 1.65rem; font-weight: 800; color: var(--fs-forest); line-height: 1.15; margin: .15rem 0; }
 .fs-kpi .l { font-size: .82rem; color: var(--fs-muted); }
-.fs-pill { display:inline-block; border-radius:999px; padding:.15rem .65rem; font-size:.8rem; font-weight:600;
-           margin-right:.3rem; }
-.fs-good { background:#e3f3e3; color:#185c18; } .fs-warn { background:#fff1cc; color:#7a5300; }
-.fs-bad { background:#fbe1e1; color:#8f2222; } .fs-info { background:#e3eefb; color:#174b8a; }
+.fs-pill { display:inline-block; border-radius:999px; padding:.14rem .62rem; font-size:.76rem; font-weight:600;
+           margin: 0 .3rem .25rem 0; }
+.fs-good { background:#E3F1E6; color:#1F5E36; } .fs-warn { background:var(--fs-gold-bg); color:#7A5A12; }
+.fs-bad { background:#F8E3E1; color:#8F2A22; } .fs-info { background:#E6EEF0; color:#2D4A55; }
+.fs-plan { background:#EEF0EE; color:#5B655E; }
 .fs-rank { background: var(--fs-card); border: 1px solid var(--fs-line); border-left: 6px solid var(--c);
-           border-radius: 14px; padding: 1rem 1.2rem; margin-bottom: .8rem; }
-.fs-rank .score { font-size: 2rem; font-weight: 800; color: var(--fs-ink); }
-.fs-source { font-size: .8rem; color: var(--fs-muted); }
-.fs-note { background:#f3f7ef; border-left:4px solid var(--fs-green); padding:.7rem 1rem; border-radius:8px;
-           color:#2b3a26; font-size:.93rem; }
+           border-radius: 16px; padding: 1rem 1.2rem; margin-bottom: .8rem; box-shadow: var(--fs-shadow); }
+.fs-rank .score { font-size: 2rem; font-weight: 800; color: var(--fs-forest); }
+.fs-source { font-size: .78rem; color: var(--fs-muted); }
+.fs-note { background: var(--fs-sage); border-left:4px solid var(--fs-green); padding:.75rem 1rem; border-radius:10px;
+           color: var(--fs-ink); font-size:.9rem; }
+.fs-insight { background: var(--fs-gold-bg); border-left:4px solid var(--fs-gold); padding:.75rem 1rem;
+              border-radius:10px; color: var(--fs-ink); font-size:.93rem; }
+.fs-steps { display:flex; flex-direction:column; gap:.3rem; margin:.2rem 0 .6rem 0; }
+.fs-steps .s { font-size:.84rem; color: var(--fs-muted); }
+.fs-steps .s b { display:inline-block; width:1.35rem; height:1.35rem; line-height:1.35rem; text-align:center;
+                 border-radius:50%; background:#fff; border:1px solid var(--fs-line); margin-right:.45rem;
+                 font-size:.72rem; color: var(--fs-forest); }
+.fs-steps .s.on { color: var(--fs-forest); font-weight: 600; }
+.fs-steps .s.on b { background: var(--fs-green); color:#fff; border-color: var(--fs-green); }
+@media (max-width: 640px) { .fs-hero { padding: 1.4rem 1.2rem; } .fs-hero h1 { font-size: 1.7rem; } }
 </style>
 """
 
@@ -210,9 +238,56 @@ def evaluations(rotation_ids: list[str]) -> tuple[list, object]:
 
 
 # --------------------------------------------------------------------------- small widgets
-def kpi(col, value: str, label: str):
-    col.markdown(f"<div class='fs-kpi'><div class='v'>{value}</div><div class='l'>{label}</div></div>",
+def kpi(col, value: str, label: str, title: str = "", badge: str = ""):
+    t = f"<div class='t'>{title}</div>" if title else ""
+    col.markdown(f"<div class='fs-kpi'>{t}<div class='v'>{value}</div><div class='l'>{label}</div>{badge}</div>",
                  unsafe_allow_html=True)
+
+
+# Data provenance badges: every number on screen is one of these.
+PROVENANCE = {
+    "observed": ("Observed", "good"), "modelled": ("Model / reanalysis", "info"),
+    "estimated": ("Estimated", "warn"), "farmer": ("Farmer-entered", "info"),
+    "forecast": ("Forecast", "warn"), "planned": ("Planned", "plan"), "missing": ("Not available", "bad"),
+}
+
+
+def badge(kind: str, text: str | None = None) -> str:
+    label, css = PROVENANCE[kind]
+    return pill(text or label, css)
+
+
+STEPS = [("views/1_Farm_Profile.py", "Select your farm"), ("views/1_Farm_Profile.py", "Enter your conditions"),
+         ("views/2_NASA_Insights.py", "Analyse NASA data"), ("views/4_Rotation_Comparison.py", "Compare rotations"),
+         ("views/5_Recommendations.py", "Review recommendations")]
+
+
+def step_tracker(active: int | None):
+    html = "".join(f"<div class='s{' on' if active is not None and i <= active else ''}'><b>{i + 1}</b>{t}</div>"
+                   for i, (_, t) in enumerate(STEPS))
+    st.markdown(f"<div class='fs-steps'>{html}</div>", unsafe_allow_html=True)
+
+
+@st.cache_resource(show_spinner="Training the NDVI outlook model on MODIS data…")
+def ndvi_model(_v: int = 1):
+    """Train once per server on all preset regions that have MODIS NDVI cached."""
+    from . import ndvi_forecast as N
+    series = {}
+    for r in R.load_regions().itertuples():
+        if F.ndvi_path(r.lat, r.lon).exists():
+            series[r.region_id] = V.clean_ndvi(F.load_ndvi(r.lat, r.lon))
+    return N.train(series) if len(series) >= 2 else None
+
+
+@st.cache_data(ttl=3600)
+def amis_prices() -> pd.DataFrame | None:
+    import glob
+    files = sorted(glob.glob(str(C.RAW / "amis" / "amis_prices_*.csv")))
+    if not files:
+        return None
+    d = pd.concat([pd.read_csv(f) for f in files], ignore_index=True)
+    d["date"] = pd.to_datetime(d["date"])
+    return d.drop_duplicates(["commodity", "market", "date"])
 
 
 def card(col, icon: str, title: str, body: str):
