@@ -79,6 +79,21 @@ for i, e in enumerate(ranked):
             st.markdown(f"- MODIS NDVI low-vegetation window covered by a crop: **{e.bare_cover_pct:.0f}%**.")
         st.caption(f"Simulated on observed weather of cycle-years {e.baseline_years[0]}–{e.baseline_years[-1]}."
                    if e.baseline_years else "")
+    sp = ui.soil_profile(e)
+    lvl = {"Low": "bad", "Moderate": "warn", "High": "good"}
+    ero = {"Low": "good", "Moderate": "warn", "High": "bad"}
+    with st.expander("🌱 Soil health, pests, erosion & forage"):
+        st.markdown(ui.pill(f"Pest-cycle break: {sp['pest']}", lvl[sp['pest']])
+                    + ui.pill(f"Erosion risk: {sp['erosion']}", ero[sp['erosion']])
+                    + ui.pill(f"Forage value: {sp['forage']}", lvl[sp['forage']]), unsafe_allow_html=True)
+        for x in sp["roles"]:
+            st.markdown("- " + x)
+        a1, a2, a3 = st.columns(3, gap="medium")
+        a1.markdown("**🐛 Pests & weeds**\n\n" + "\n".join(f"- {x}" for x in sp["pest_txt"]))
+        a2.markdown("**🌬️ Erosion**\n\n" + "\n".join(f"- {x}" for x in sp["erosion_txt"]))
+        a3.markdown("**🐄 Forage**\n\n" + "\n".join(f"- {x}" for x in sp["forage_txt"]))
+        st.caption("From crop traits (FAO-56 root depths, Punjab extension guidance) and NASA SRTM slope. "
+                   "Pest pressure differs by village and year — confirm with your extension officer.")
     st.write("")
 
 # ------------------------------------------------------------------ gaps + next steps

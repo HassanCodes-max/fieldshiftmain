@@ -358,3 +358,6 @@ html[lang="ur"] #mkChart .lbl { font-family: "Noto Nastaliq Urdu", serif; font-s
 .mk-markets .chips { margin-bottom: .8rem; }
 
 @media print { #market { display: none; } }
+
+.soil-notes { margin: .8rem 0 0; padding-inline-start: 1.1rem; color: var(--ink); font-size: .9rem; }
+.soil-notes li { margin: .25rem 0; }

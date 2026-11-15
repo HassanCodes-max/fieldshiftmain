@@ -24,7 +24,8 @@ with t1:
 | **SMAP SPL3SMP_E v6** | Surface soil moisture | 9 km, daily | 2015 → | Earthdata login (AppEEARS) | ✅ all 6 preset regions loaded |
 | **GPM IMERG** (Final, monthly) | Precipitation | 0.1° | 2000 → | Earthdata login | 🔑 used in the public website; planned here |
 | **Punjab AMIS** (amis.pk) | Wholesale prices: wheat, rice/paddy, maize, moong, seed cotton | market level, Rs/100 kg | daily snapshots (first: 15 Nov 2026) | public web page, `python -m scripts.fetch_amis` | ✅ snapshot |
-| ISRIC SoilGrids · GRACE/GRACE-FO · MODIS MOD16 | soil texture · groundwater · evapotranspiration | — | — | — | ⏳ planned, not used |
+| **NASA SRTM** (90 m) | Elevation on a 5 × 5 grid (~500 m spacing) → slope and relief | 90 m | 2000 (static) | OpenTopoData API, no login | ✅ used for erosion risk |
+| GRACE/GRACE-FO · ECOSTRESS · ISRIC SoilGrids · MODIS MOD16 | groundwater storage · land-surface temperature and ET · soil texture · evapotranspiration | — | — | Earthdata / AppEEARS | ⏳ next step, not used |
 """)
     st.markdown("""
 **Where every number comes from**
@@ -62,6 +63,28 @@ FAO Paper 29 / Maas & Hoffman 1977 (salinity tolerance), and peer-reviewed heat-
 
 District statistics (Pakistan Bureau of Statistics / Punjab Crop Reporting Service) describe the *region*; farm
 answers on **My Farm** describe *your* field. Field Shift never treats one as the other.
+""")
+    st.markdown("**Soil-health traits of each crop** (`data/crop_knowledge/crop_traits.csv`)")
+    from src import soil_health as SH
+    st.dataframe(SH.load_traits()[["botanical_family", "nitrogen_fixing", "max_root_depth_m", "soil_role",
+                                   "forage_value", "main_pests", "pest_notes", "soil_notes", "source"]],
+                 width="stretch")
+    st.markdown("""
+**How crops build soil health**
+- **Nitrogen-fixing crops (legumes such as mungbean):** bacteria in root nodules take nitrogen from the air. Roots and
+  leaves left in the field return nitrogen and organic matter, so the next crop needs less fertiliser.
+- **Cover crops:** a short crop grown in a gap that would otherwise be bare (in Punjab, the hot April–June fallow after
+  wheat). It shades the soil, keeps roots alive, reduces wind and rain erosion and adds organic matter.
+- **Deep-rooting crops (maize, cotton):** roots reach 1.7 m, using water and nutrients below other crops' roots and
+  loosening compacted layers, such as the plough pan left by puddled rice.
+- **Drought-tolerant crops:** maize and mungbean need far less water than puddled rice (see **Crop Rotation**).
+- **Pest-cycle disruption:** pests, diseases and weeds that attack one plant family die out when the next crop is a
+  different family. Rice → wheat (two grasses) builds up the weed *Phalaris minor*; a legume or cotton breaks the cycle.
+- **Erosion:** the Punjab plains are flat (NASA SRTM slope 0.25–0.44 % at the six districts), so water erosion is low;
+  the main risks are wind and storm splash on **bare** soil, highest on sandy soil and after residue burning.
+- **Forage value:** wheat straw (bhusa) and maize fodder or stover feed livestock, a second income source on mixed farms.
+
+The pest, erosion and forage ratings explain each rotation; they do not change its score.
 """)
     st.markdown("**Soil assumptions**")
     st.dataframe(pd.DataFrame({"Readily available water (mm)": S.BUCKET_MM,

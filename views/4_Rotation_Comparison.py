@@ -89,6 +89,21 @@ with c:
                f"balance on each year's NASA weather. 1 irrigation ≈ {C.IRRIGATION_DEPTH_MM:.0f} mm (3 inches). "
                "Canal/field losses are not included.")
 
+st.markdown("#### Soil health, pests, erosion & forage")
+yn = lambda b: "✅" if b else "—"  # noqa: E731
+prof = []
+for e in evals:
+    sp = ui.soil_profile(e)
+    prof.append({"Rotation": e.label, "Nitrogen-fixing crop": yn(sp["n_fixing"]), "Cover crop in fallow": yn(sp["cover"]),
+                 "Deep-rooting crop": yn(sp["deep"]), "Plant families": sp["families"],
+                 "Pest-cycle break": sp["pest"], "Erosion risk": sp["erosion"], "Forage value": sp["forage"],
+                 "Bare days": e.schedule.bare_days})
+st.dataframe(pd.DataFrame(prof).set_index("Rotation"), width="stretch")
+s_ = ui.srtm(st.session_state.profile["lat"], st.session_state.profile["lon"])
+st.caption((f"Erosion uses NASA SRTM slope ({s_['slope_pct']:.1f}%, elevation {s_['elevation_m']:.0f} m), bare days, "
+            "soil texture and residue burning. " if s_ else "Slope unavailable. ") +
+           "Pest-cycle break: more plant families = fewer shared pests. Details on each card in **Recommendations**.")
+
 st.markdown("#### Year-to-year water need")
 st.plotly_chart(VIZ.fig_water_years(evals, colors), width="stretch")
 st.caption("Each point is one rotation cycle simulated with that year's observed weather — dry years need more water.")

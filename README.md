@@ -31,7 +31,7 @@ Field Shift has two parts that share one data pipeline and engine:
 
 | Part | For whom | What it offers |
 |---|---|---|
-| 🌐 **Public website** (`docs/`) | Farmers and the general public | 5 tap-to-answer questions, side-by-side comparison of all rotations (score, water, irrigations, six factors, bare days), crop price comparison from Punjab AMIS per maund and per 100 kg with prices in each market, NASA charts of the district, live 7-day weather tips; English and اردو; works on any phone, no server |
+| 🌐 **Public website** (`docs/`) | Farmers and the general public | 5 tap-to-answer questions, side-by-side comparison of all rotations (score, water, irrigations, six factors, bare days), soil-health table (nitrogen, cover crop, deep roots, pest cycle, erosion, fodder) with a 'how crops build soil' guide, crop price comparison from Punjab AMIS per maund and per 100 kg with prices in each market, NASA charts of the district, live 7-day weather tips; English and اردو; works on any phone, no server |
 | 🔬 **Analysis platform** (Streamlit) | Extension officers, researchers, judges | 8 pages, any map location, scenario analysis, full charts, market prices, downloadable data and reports |
 
 ---
@@ -42,10 +42,10 @@ Field Shift has two parts that share one data pipeline and engine:
 |---|---|
 | **Overview** | Farm summary, satellite map, latest NDVI and SMAP readings with dates, heat and rainfall summary, 12-month risk strip, 6-week greenness outlook, recommended next action, data-source status |
 | **My Farm** | 6 preset districts or any point on a satellite map; soil texture, salinity test, irrigation source and reliability, waterlogging, residue burning, current rotation, market access per crop, priority weights; save and load a profile |
-| **NASA Insights** | Temperature, rainfall vs. evaporative demand, soil moisture (SMAP and POWER), MODIS NDVI cycle with detected bare periods, full NDVI record, long-term trends, anomaly heatmaps, CSV downloads |
+| **NASA Insights** | Temperature, rainfall vs. evaporative demand, soil moisture (SMAP and POWER), MODIS NDVI cycle with detected bare periods, full NDVI record, long-term trends, anomaly heatmaps, **animated trend-over-time map of the 6 districts** (heat days, rainfall, peak NDVI, SMAP soil moisture, year by year), CSV downloads |
 | **Seasonal Analysis** | Month × stress heatmap (heat, water deficit, dry soil, heavy rain, cold, low vegetation), months where stresses overlap, current rotation against MODIS bare periods |
-| **Crop Rotation** | Compare up to 4 rotations or build your own; Baseline, +1.5 °C and −10% rain scenarios; crop calendar, factor scores, irrigation need per crop and per year, full score breakdown |
-| **Recommendations** | Ranked cards with benefits, risks, NASA evidence and confidence; robustness check; information gaps; extension-officer checklist; downloadable HTML report |
+| **Crop Rotation** | Compare up to 4 rotations or build your own; Baseline, +1.5 °C and −10% rain scenarios; crop calendar, factor scores, irrigation need per crop and per year, **soil-health table** (nitrogen fixing, cover crop, deep roots, pest-cycle break, erosion risk, forage value), full score breakdown |
+| **Recommendations** | Ranked cards with benefits, risks, NASA evidence, confidence, and **soil health, pests, erosion and forage** explanations; robustness check; information gaps; extension-officer checklist; downloadable HTML report |
 | **Market Intelligence** | Punjab AMIS wholesale prices for wheat, rice and paddy, maize, moong and seed cotton by market; availability vs. the farmer's answers; price history |
 | **Data & Methods** | Every dataset, formula, assumption, crop parameter and limitation |
 
@@ -65,7 +65,9 @@ Every number is labelled by origin: **Observed** (satellite or market), **Model 
 | **GPM IMERG** Final monthly | NASA GES DISC | 0.1° | 2000 → | rainfall cross-check of POWER | ✅ public website |
 | **Punjab AMIS** wholesale prices | Directorate of Agriculture (Economics & Marketing) Punjab | market level, Rs/100 kg | daily snapshots from 15 Nov 2026 | crop price comparison on the website and platform | ✅ in use |
 | Local crop knowledge | Punjab Agriculture Department, AARI, PARC, FAO | district | — | sowing windows, crop coefficients, thresholds, agro-ecological zones | ✅ `data/crop_knowledge/` |
-| ISRIC SoilGrids · GRACE/GRACE-FO · MODIS MOD16 | — | — | — | soil texture, groundwater, evapotranspiration | ⏳ planned |
+| **NASA SRTM** elevation | NASA / USGS via OpenTopoData | 90 m | 2000 (static) | slope and relief around each farm → erosion risk | ✅ in use |
+| Crop soil-health traits | FAO-56 (root depth), Punjab Agriculture Dept, PARC, AARI, CCRI | crop | — | nitrogen fixing, root depth, residue, forage, pests | ✅ `crop_traits.csv` |
+| GRACE/GRACE-FO · ECOSTRESS · ISRIC SoilGrids · MODIS MOD16 | — | — | — | groundwater, land-surface temperature, soil texture, evapotranspiration | ⏳ next step |
 
 **Study districts:** Faisalabad, Sheikhupura, Gujranwala, Hafizabad, Okara and Multan. They cover the Rice-wheat,
 Mixed and Cotton-wheat agro-ecological zones.
@@ -122,7 +124,18 @@ The model is trained on all 6 districts for 2015–2026 and tested leave-one-yea
 It is a short-range signal of whether an area is greener or browner than usual. It is not a yield forecast and
 does not change the rotation scores.
 
-### 5 · Scenarios
+### 5 · Soil health, pests, erosion and forage
+Each rotation gets an explanatory profile (it does not change the score):
+- **Nitrogen-fixing crops** (mungbean) add nitrogen through root bacteria. **Cover crops** fill the April–June
+  fallow. **Deep-rooting crops** (maize, cotton, ~1.7 m) use subsoil water and loosen the plough pan left by
+  puddled rice.
+- **Pest-cycle break** rises with the number of plant families. Rice → wheat (two grasses) builds up *Phalaris
+  minor*, and cotton with mungbean shares whitefly.
+- **Erosion risk** combines NASA SRTM slope (0.25–0.44% at the six districts, so water erosion is low), bare days,
+  sandy soil and residue burning.
+- **Forage value** comes from wheat straw (bhusa), maize fodder and stover, and mungbean haulm.
+
+### 6 · Scenarios
 The +1.5 °C and −10% rain scenarios shift the observed record uniformly and rerun the whole engine. They are
 sensitivity tests, not climate projections.
 
@@ -165,13 +178,14 @@ src/
   climate_analysis.py     climatology, trends, stress matrix, insights
   vegetation_analysis.py  NDVI climatology, bare-period detection, seasonal peaks
   soil_analysis.py        texture, FAO-29 salinity, soil-water assumptions
+  soil_health.py          pest-cycle break, erosion risk (SRTM slope), forage, crop roles
   rotation_engine.py      scheduling, season simulation, scoring, explanations
   ndvi_forecast.py        6-week NDVI outlook (ridge regression, leave-one-year-out validation)
   visualization.py        Plotly charts
   report.py               printable farmer report
   ui.py                   state, design system, shared components, cached data
 scripts/                  data download and conversion (POWER/MODIS, SMAP, AMIS) and website price export
-data/crop_knowledge/      crops.csv, rotations.csv, regions.csv (with sources and verification status)
+data/crop_knowledge/      crops.csv, crop_traits.csv, rotations.csv, regions.csv (with sources and verification status)
 data/raw/                 cached NASA data, AppEEARS SMAP downloads, AMIS price snapshots
 docs/                     public website
 tests/                    page rendering test
@@ -189,7 +203,8 @@ tests/                    page rendering test
   checked against station data.
 - Crop calendars, heat thresholds and percolation rates are regional guidance and are marked "verify locally".
 - AMIS prices are wholesale market prices, not farm-gate prices, and the history starts in November 2026.
-- Soil-health rule weights are expert heuristics, documented so they can be challenged.
+- Soil-health rule weights and pest notes are expert heuristics, documented so they can be challenged and checked locally.
+- GRACE groundwater and ECOSTRESS are not yet integrated.
 
 ## Credits
 

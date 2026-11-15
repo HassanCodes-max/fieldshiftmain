@@ -180,6 +180,39 @@ def check_landcover(lat: float, lon: float, year: int = 2022) -> dict:
             "is_cropland": centre in (12, 14)}
 
 
+# --------------------------------------------------------------------------- SRTM elevation / slope
+SRTM_URL = "https://api.opentopodata.org/v1/srtm90m"
+
+
+def srtm_path(lat: float, lon: float) -> Path:
+    return C.RAW / f"srtm_{location_key(lat, lon)}.json"
+
+
+def load_srtm(lat: float, lon: float, fetch: bool = True) -> dict | None:
+    """NASA SRTM 90 m elevation on a 5 x 5 grid (~500 m spacing) around the farm -> elevation, relief, slope.
+
+    Slope is the mean of the grid's central-difference slopes (percent). Served by OpenTopoData (no login).
+    """
+    path = srtm_path(lat, lon)
+    if path.exists():
+        return json.loads(path.read_text())
+    if not fetch:
+        return None
+    step = 0.0045  # ~500 m in latitude
+    pts = [(lat + i * step, lon + j * step) for i in range(-2, 3) for j in range(-2, 3)]
+    r = requests.get(SRTM_URL, params={"locations": "|".join(f"{a:.5f},{b:.5f}" for a, b in pts)}, timeout=60)
+    r.raise_for_status()
+    z = np.array([p["elevation"] for p in r.json()["results"]], dtype=float).reshape(5, 5)
+    dy = step * 111_000
+    dx = step * 111_000 * np.cos(np.radians(lat))
+    gy, gx = np.gradient(z, dy, dx)
+    slope = float(np.mean(np.hypot(gx, gy)) * 100)
+    out = {"elevation_m": float(z[2, 2]), "relief_m": float(z.max() - z.min()), "slope_pct": round(slope, 2),
+           "source": "NASA SRTM 90 m via OpenTopoData", "grid": "5 x 5, ~500 m spacing"}
+    path.write_text(json.dumps(out))
+    return out
+
+
 # --------------------------------------------------------------------------- SMAP (optional)
 def smap_path(lat: float, lon: float) -> Path:
     return C.RAW / f"smap_{location_key(lat, lon)}.csv"

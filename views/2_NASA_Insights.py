@@ -1,3 +1,4 @@
+import pandas as pd
 import streamlit as st
 
 from src import climate_analysis as CA
@@ -37,7 +38,40 @@ for line in CA.headline_insights(b.clim, ann, b.trends):
     st.markdown("- " + line)
 
 tabs = st.tabs(["🌡️ Temperature", "🌧️ Rain & water demand", "💧 Soil moisture", "🌿 Vegetation (NDVI)",
-                "📈 Long-term change", "⬇️ Download data"])
+                "📈 Long-term change", "⬇️ Download data", "🗺️ Trend map"])
+
+with tabs[6]:
+    import plotly.express as px
+    dy = ui.district_years()
+    METRICS = {"hot_days": ("Very hot days (max ≥ 40 °C)", "days", "YlOrRd"),
+               "wheat_heat_days": ("March–April days ≥ 32 °C (wheat grain filling)", "days", "YlOrRd"),
+               "rain": ("Yearly rainfall", "mm", "Blues"), "monsoon_rain": ("Monsoon (Jul–Sep) rainfall", "mm", "Blues"),
+               "ndvi_peak": ("Peak greenness (MODIS NDVI)", "NDVI", "Greens"),
+               "smap_mean": ("Mean surface soil moisture (SMAP)", "m³/m³", "BrBG")}
+    have = [k for k in METRICS if k in dy.columns and dy[k].notna().any()]
+    mk = st.selectbox("Indicator", have, format_func=lambda k: METRICS[k][0])
+    d = dy.dropna(subset=[mk]).sort_values("year")
+    name, unit, scale = METRICS[mk]
+    st.markdown(f"**{name} across the 6 districts, year by year.** Press ▶ to play the years, or drag the slider.")
+    fig = px.scatter_map(d, lat="lat", lon="lon", color=mk, size=[18] * len(d), size_max=26, hover_name="district",
+                         hover_data={mk: ":.2f" if unit in ("NDVI", "m³/m³") else ":.0f", "lat": False, "lon": False},
+                         animation_frame="year", color_continuous_scale=scale,
+                         range_color=(d[mk].quantile(.05), d[mk].quantile(.95)), zoom=6.2,
+                         center={"lat": 31.2, "lon": 73.0}, map_style="carto-positron", height=520,
+                         labels={mk: unit, "year": "Year"})
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), font=dict(family="Inter, sans-serif"))
+    st.plotly_chart(fig, width="stretch")
+    first, last = int(d["year"].min()), int(d["year"].max())
+    k = 5
+    early = d[d["year"] < first + k].groupby("district")[mk].mean()
+    late = d[d["year"] > last - k].groupby("district")[mk].mean()
+    tbl = pd.DataFrame({f"{first}–{first + k - 1}": early, f"{last - k + 1}–{last}": late})
+    tbl["Change"] = tbl.iloc[:, 1] - tbl.iloc[:, 0]
+    st.markdown(f"**Change between the first and last {k} years** ({unit})")
+    st.dataframe(tbl.style.format("{:+.2f}" if unit in ("NDVI", "m³/m³") else "{:+.0f}", subset=["Change"])
+                 .format("{:.2f}" if unit in ("NDVI", "m³/m³") else "{:.0f}", subset=tbl.columns[:2]), width="stretch")
+    st.caption("Each dot is one district's sampling point (POWER ≈ 50 km cell, MODIS 2 × 2 km, SMAP 9 km). "
+               "Single years vary a lot; read the direction of change, not one year's value.")
 
 with tabs[0]:
     st.markdown("**Average daily maximum and minimum temperature by month** · NASA POWER `T2M_MAX`, `T2M_MIN`")

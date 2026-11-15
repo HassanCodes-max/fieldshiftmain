@@ -279,6 +279,47 @@ def ndvi_model(_v: int = 1):
     return N.train(series) if len(series) >= 2 else None
 
 
+CROP_SHORT = {"rice": "Rice", "wheat": "Wheat", "maize": "Maize", "mungbean": "Mungbean", "cotton": "Cotton"}
+
+
+@st.cache_data(show_spinner=False)
+def srtm(lat: float, lon: float) -> dict | None:
+    try:
+        return F.load_srtm(lat, lon)
+    except Exception:  # offline or service down: show "unknown slope" instead of failing
+        return None
+
+
+def soil_profile(e) -> dict:
+    """Soil-health profile (pest cycle, erosion, forage, crop roles) for one Evaluation."""
+    from . import soil_health as SH
+    p = st.session_state.profile
+    s = srtm(p["lat"], p["lon"])
+    return SH.profile(e.crop_ids, e.schedule.bare_days, p["soil_texture"], p["burns_residue"],
+                      s["slope_pct"] if s else None, SH.load_traits(), CROP_SHORT)
+
+
+@st.cache_data(show_spinner="Building the district trend map…")
+def district_years() -> pd.DataFrame:
+    """Yearly indicators for every preset district (for the trend-over-time map)."""
+    rows = []
+    for r in R.load_regions().itertuples():
+        b = load_bundle(float(r.lat), float(r.lon))
+        if b is None:
+            continue
+        a = b.annual.copy()
+        if b.ndvi is not None:
+            a = a.merge(b.ndvi.groupby("year")["ndvi"].max().rename("ndvi_peak"), left_on="year",
+                        right_index=True, how="left")
+        if b.smap is not None:
+            sm = b.smap.groupby(b.smap["date"].dt.year)["soil_moisture"].mean().rename("smap_mean")
+            a = a.merge(sm, left_on="year", right_index=True, how="left")
+        a["district"] = r.name.replace(" (rural)", "")
+        a["lat"], a["lon"] = float(r.lat), float(r.lon)
+        rows.append(a)
+    return pd.concat(rows, ignore_index=True)
+
+
 @st.cache_data(ttl=3600)
 def amis_prices() -> pd.DataFrame | None:
     import glob

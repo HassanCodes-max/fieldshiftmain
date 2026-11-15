@@ -144,9 +144,10 @@ src = [
     ("🏪", "Punjab AMIS", "Wholesale crop prices from Punjab markets.",
      "observed" if amis is not None else "missing",
      f"Snapshot {amis['date'].max():%d %b %Y}" if amis is not None else "Not loaded"),
+    ("⛰️", "NASA SRTM", "Elevation and slope (90 m) for erosion risk.", "observed", "In use"),
     ("🌧️", "GPM IMERG", "Satellite rainfall cross-check. Used in the public website build.", "planned", "Planned here"),
-    ("🪨", "ISRIC SoilGrids", "Soil texture estimates for unknown soils.", "planned", "Planned"),
-    ("🌊", "GRACE / GRACE-FO", "Groundwater storage trend.", "planned", "Planned"),
+    ("🌊", "GRACE / GRACE-FO", "Groundwater storage trend.", "planned", "Next step"),
+    ("🌡️", "ECOSTRESS", "Land-surface temperature and plant water stress, 70 m.", "planned", "Next step"),
 ]
 for row in range(0, len(src), 4):
     cols = st.columns(4)

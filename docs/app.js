@@ -298,7 +298,40 @@ function renderResult() {
         ...F.map(k => cell(o.scores[k])),
         el("td", { class: "num", text: L(n0(o.ev.bare)) })))))));
 
-  box.replaceChildren(verdict, lists, calendar(rows), opts, cmp, actions);
+
+  // soil health, pests, erosion & forage (crop traits + NASA SRTM slope)
+  let soilCard = null;
+  if (SOIL && SOIL.rotations) {
+    const LV = { Low: 0, Moderate: 1, High: 2 };
+    const sl = (SOIL.srtm[S.region] || {}).slope;
+    const ero = o => {
+      let e = sl == null ? 0 : sl < 1 ? 0 : sl < 3 ? 1 : 2;
+      if (o.ev.bare >= 90) e = Math.max(e, 1);
+      if (o.ev.bare >= 90 && S.soil === "sandy loam") e = 2;
+      return e;
+    };
+    const lvl = (v, good) => el("td", { class: "num sc s" + (good ? [1, 2, 3][v] : [3, 2, 1][v]), text: f.lvl[v] });
+    const yes = b => el("td", { class: "num", text: b ? "✅" : "—" });
+    soilCard = el("div", { class: "card fade" }, el("h4", { text: f.soil_h, style: { margin: "0 0 .3rem" } }),
+      el("p", { class: "muted", text: sl == null ? f.soil_intro0 : t("soil_intro", { slope: sl.toFixed(2) }), style: { margin: "0 0 .7rem" } }),
+      el("div", { class: "tbl-wrap" }, el("table", { class: "tbl" },
+        el("thead", {}, el("tr", {}, ["soil_rot", "soil_n", "soil_cover", "soil_deep", "soil_pest", "soil_ero", "soil_forage"]
+          .map((k, i) => el("th", { class: i ? "num" : "", text: f[k] })))),
+        el("tbody", {}, ranked.map(o => {
+          const r = SOIL.rotations[o.rid] || {};
+          return el("tr", { class: o === best ? "best" : "" }, el("td", { text: rotName(o.rid) }),
+            yes(r.nfix), yes(r.cover), yes(r.deep), lvl(LV[r.pest] ?? 0, true), lvl(ero(o), false), lvl(LV[r.forage] ?? 0, true));
+        })))),
+      el("ul", { class: "soil-notes" }, [
+        SOIL.rotations[best.rid]?.nfix ? f.sn_nfix : null,
+        SOIL.rotations[best.rid]?.deep ? f.sn_deep : null,
+        SOIL.rotations[cur.rid]?.phalaris ? f.sn_phalaris : null,
+        SOIL.rotations[best.rid]?.whitefly ? f.sn_whitefly : null,
+        best.ev.bare >= 90 ? t("sn_bare", { n: n0(best.ev.bare) }) : null,
+      ].filter(Boolean).map(x => el("li", { text: L(x) }))));
+  }
+
+  box.replaceChildren(...[verdict, lists, calendar(rows), opts, cmp, soilCard, actions].filter(Boolean));
 }
 
 /* ---------------------------------------------------------------- weather */
@@ -468,6 +501,7 @@ function renderLand() {
 
 /* ---------------------------------------------------------------- market prices (Punjab AMIS) */
 let PRICES = null;
+let SOIL = null;
 let mkCrop = "wheat";
 const PER40 = 0.4; // AMIS reports Rs/100 kg; farmers trade per maund (40 kg)
 function money(v) { return L(Math.round(v).toLocaleString("en-US")); }
@@ -566,6 +600,8 @@ function renderStatic() {
       el("h4", { text: L(h) }), el("p", { text: L(p) }))));
   document.getElementById("sources").replaceChildren(...f.sources.map(([h, p]) =>
     el("div", { class: "source reveal" }, el("b", { text: h }), el("span", { text: L(p) }))));
+  document.getElementById("soilEdu").replaceChildren(...f.edu.map(([h, p]) =>
+    el("div", { class: "source reveal" }, el("b", { text: h }), el("span", { text: L(p) }))));
   document.getElementById("built").textContent = t("built", { date: META.built });
   document.querySelectorAll(".count").forEach(n => { n.textContent = L(n.dataset.to); });
   observeAll();
@@ -637,6 +673,7 @@ async function boot() {
     renderAll();
   });
   try { const pr = await fetch("data/prices.json"); if (pr.ok) PRICES = await pr.json(); } catch (e) { /* offline */ }
+  try { const so = await fetch("data/soil.json"); if (so.ok) SOIL = await so.json(); } catch (e) { /* offline */ }
   renderAll();
   // preload the other districts in the background so switching is instant
   setTimeout(() => META.regions.forEach(r => loadRegion(r.id).catch(() => {})), 1500);
