@@ -106,13 +106,26 @@ const median = (v: number[]) => {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 };
 
+type Row = { commodity: string; crop: string; market: string; d: string; price: number; f: Date | null };
+
+/** Prices from the database; if it is unavailable, the AMIS snapshot bundled with the app (never an empty page). */
 export async function marketSummary(): Promise<MarketSummary> {
-  const db = await getDb();
-  await ensureSeeded(db);
-  const rows = (await db.query<{ commodity: string; crop: string; market: string; d: string; price: string; f: Date }>(
-    `select commodity, crop, market, to_char(price_date, 'YYYY-MM-DD') as d, price::text as price, fetched_at as f
-     from market_prices where price_date > current_date - interval '400 days'`,
-  )).map((r) => ({ ...r, price: Number(r.price) }));
+  let rows: Row[];
+  try {
+    const db = await getDb();
+    await ensureSeeded(db);
+    rows = (await db.query<{ commodity: string; crop: string; market: string; d: string; price: string; f: Date }>(
+      `select commodity, crop, market, to_char(price_date, 'YYYY-MM-DD') as d, price::text as price, fetched_at as f
+       from market_prices where price_date > current_date - interval '400 days'`,
+    )).map((r) => ({ ...r, price: Number(r.price) }));
+  } catch (e) {
+    console.error("[market] database unavailable, using bundled snapshot:", e instanceof Error ? e.message : e);
+    rows = (await getPriceSeed()).map((r) => ({ commodity: r.commodity, crop: r.crop, market: r.market, d: r.date, price: r.price, f: null }));
+  }
+  return summarize(rows);
+}
+
+function summarize(rows: Row[]): MarketSummary {
   if (!rows.length) return { date: null, markets: 0, snapshots: 0, lastFetched: null, crops: {}, history: [] };
   const date = rows.reduce((a, r) => (r.d > a ? r.d : a), "");
   const latest = rows.filter((r) => r.d === date);
@@ -136,9 +149,9 @@ export async function marketSummary(): Promise<MarketSummary> {
     for (const r of rows) if (r.commodity === head) byDate.set(r.d, [...(byDate.get(r.d) ?? []), r.price]);
     for (const [d, v] of [...byDate.entries()].sort()) history.push({ date: d, crop, median: median(v) });
   }
-  const lastFetched = rows.reduce((a, r) => (new Date(r.f) > a ? new Date(r.f) : a), new Date(0));
+  const fetched = rows.filter((r) => r.f).map((r) => new Date(r.f as Date).getTime());
   return {
     date, markets: new Set(latest.map((r) => r.market)).size, snapshots: new Set(rows.map((r) => r.d)).size,
-    lastFetched: lastFetched.toISOString(), crops, history,
+    lastFetched: fetched.length ? new Date(Math.max(...fetched)).toISOString() : null, crops, history,
   };
 }
