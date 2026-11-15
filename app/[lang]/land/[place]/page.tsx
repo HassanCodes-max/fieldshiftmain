@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { LandReportView } from "@/components/land/LandReportView";
 import { Container, Skeleton } from "@/components/ui/primitives";
@@ -30,6 +31,9 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/land/[plac
 async function Content({ lang, place }: { lang: Lang; place: string }) {
   const ref = parsePlace(place);
   if (!ref) notFound();
+  // A map point downloads live NASA data: always render it at request time, never as part of a prerendered shell
+  // (otherwise the download is cut off and shows up as "NASA did not respond").
+  if (!("region" in ref)) await connection();
   let report: Awaited<ReturnType<typeof landReport>> | null = null;
   let error: string | null = null;
   try {
